@@ -1,0 +1,31 @@
+.mypy_cache/
+/.coverage*
+/.coverage.*
+/.nox/
+/.python-version
+/.pytype/
+/dist/
+/docs/_build/
+/src/*.egg-info/
+__pycache__/
+
+# logs
+logs/
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+thumbs.db
+Thumbs.db
+
+# IDE files
+.idea/
+
+# generated data
+tests/data
+
+# temporary working dir
+tmp/

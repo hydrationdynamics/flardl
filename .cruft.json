@@ -1,0 +1,21 @@
+{
+  "template": "https://github.com/cjolowicz/cookiecutter-hypermodern-python",
+  "commit": "9343fc88158a8cd3f2a121c24506fa410b350792",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "flardl",
+      "package_name": "flardl",
+      "friendly_name": "Flardl",
+      "author": "Joel Berendzen",
+      "email": "joel@generisbio.com",
+      "github_user": "hydrationdynamics",
+      "version": "0.0.0",
+      "copyright_year": "2023",
+      "license": "MIT",
+      "development_status": "Development Status :: 2 - Pre-Alpha",
+      "_template": "https://github.com/cjolowicz/cookiecutter-hypermodern-python"
+    }
+  },
+  "directory": null
+}

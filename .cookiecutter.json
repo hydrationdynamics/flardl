@@ -1,0 +1,13 @@
+{
+  "_template": "https://github.com/cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Joel Berendzen",
+  "copyright_year": "2023",
+  "development_status": "Development Status :: 2 - Pre-Alpha",
+  "email": "joel@generisbio.com",
+  "friendly_name": "Flardl",
+  "github_user": "hydrationdynamics",
+  "license": "MIT",
+  "package_name": "flardl",
+  "project_name": "flardl",
+  "version": "0.0.0"
+}
