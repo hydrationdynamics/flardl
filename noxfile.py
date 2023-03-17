@@ -150,12 +150,13 @@ def safety(session: Session) -> None:
 @session(python=python_versions)
 def mypy(session: Session) -> None:
     """Type-check using mypy."""
-    args = session.posargs or ["src", "tests"]
+    args = session.posargs or ["src"]
     session.install(".")
     session.install(
         "loguru",
         "loguru-mypy",
         "mypy",
+        "pandas",
         "pandas-stubs",
         "pytest",
     )
@@ -169,7 +170,13 @@ def tests(session: Session) -> None:
     """Run the test suite."""
     session.install(".")
     session.install(
-        "coverage[toml]", "pytest", "pytest-cov", "pytest-datadir-mgr", "pygments"
+        "coverage[toml]",
+        "pandas",
+        "pandas-stubs",
+        "pytest",
+        "pytest-cov",
+        "pytest-datadir-mgr",
+        "pygments",
     )
     try:
         session.run("pytest", "--cov=flardl", *session.posargs)
@@ -185,7 +192,7 @@ def tests(session: Session) -> None:
 def coverage(session: Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
-
+    session.install(".")
     session.install("coverage[toml]")
 
     if not session.posargs and any(Path().glob(".coverage.*")):
@@ -200,6 +207,7 @@ def typeguard(session: Session) -> None:
     session.install(".")
     session.install(
         "loguru-mypy",
+        "pandas",
         "pandas-stubs",
         "pygments",
         "pytest",

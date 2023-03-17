@@ -49,6 +49,8 @@ flake8-rst-docstrings = ">=0.2.5"
 furo = ">=2021.11.12"
 isort = ">=5.10.1"
 mypy = ">=0.930"
+nox = ">=2021.6.6"
+nox-poetry = ">=0.9.0"
 pep8-naming = ">=0.12.1"
 pre-commit = ">=2.16.0"
 pre-commit-hooks = ">=4.1.0"
@@ -61,11 +63,10 @@ typeguard = ">=2.13.3"
 xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
 # test deps for this package
-nox = ">=2021.6.6"
+pytest-cov = ">=3.0.0"
 loguru-mypy = ">=0.0.4"
 pandas = ">=1.4.0"
 pandas-stubs = ">=1.5.2.221124"
-pytest-cov = ">=3.0.0"
 pytest-datadir-mgr = ">1.3.1"
 
 [tool.bandit]
@@ -77,6 +78,9 @@ tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
 source = ["flardl"]
+concurrency = ["multiprocessing"]
+sigterm = true
+parallel = true
 
 [tool.coverage.report]
 show_missing = true
@@ -97,7 +101,7 @@ show_error_codes = true
 show_error_context = true
 
 [tool.pytest.ini_options]
-addopts = "-x"
+addopts = ["-x"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -7,6 +7,7 @@ end-before: <!-- github-only -->
 [license]: license
 [contributor guide]: contributing
 [reference]: reference
+[funding]: funding
 
 ```{toctree}
 ---
@@ -16,6 +17,7 @@ maxdepth: 1
 
 reference
 contributing
+Funding <funding>
 Code of Conduct <codeofconduct>
 License <license>
 Changelog <https://github.com/hydrationdynamics/flardl/releases>

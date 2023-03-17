@@ -1,1 +1,4 @@
-This image was created by OpenAI.
+This image was created by the DeepAI image generator at https://deepai.org, in
+response to the prompt "bear typing on a laptop with screen showing file
+folders".  The license terms state the image may be used "for any legal
+purpose you wish".

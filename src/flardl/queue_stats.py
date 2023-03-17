@@ -1,11 +1,13 @@
 """Simple queue-associated statistical functions."""
-from collections import Counter
 from collections import UserDict
 from collections import deque
+from collections.abc import Iterable
 from inspect import signature
 from itertools import zip_longest
+from typing import Any
 from typing import Callable
 from typing import Optional
+from typing import TypeVar
 from typing import Union
 
 
@@ -14,7 +16,8 @@ GLOBAL_KEY = "total"
 TIME_ROUNDING = 1  # digits, milliseconds
 RATE_ROUNDING = 1  # digits, inverse seconds
 TIME_EPSILON = 0.01  # milliseconds
-SIMPLE_TYPES = Union[int, float, str, None]
+SIMPLE_TYPES = Union[int, float, None]
+SelfStats = TypeVar("SelfStats", bound="QueueStats")
 
 
 class QueueStat:
@@ -26,21 +29,17 @@ class QueueStat:
         stat_func: Optional[Callable[[dict[str, SIMPLE_TYPES]], None]] = None,
         is_result_stat: bool = False,
         is_global_stat: bool = True,
-        is_counter: bool = False,
         history_size: int = 0,
     ):
         """Initialize naming and storage."""
         self.name = name
         self.stat_func = stat_func
         if self.stat_func is not None:
-            self.param_names = [p for p in signature(stat_func).parameters]
+            self.param_names = [p for p in signature(stat_func).parameters]  # type: ignore
         self.is_global_stat = is_global_stat
         self.is_result_stat = is_result_stat
-        if is_counter:
-            self.value = 0
-        else:
-            self.value = None
-        self.history = deque(maxlen=history_size)
+        self.value: SIMPLE_TYPES = None
+        self.history: deque[SIMPLE_TYPES] = deque(maxlen=history_size)
 
     def __repr__(self):
         """Represent string of self with values."""
@@ -57,20 +56,21 @@ class QueueStat:
         _unused = (worker_name,)  # noqa: F841
         return self.value
 
-    def get_history(self, worker_name: Optional[str] = None) -> SIMPLE_TYPES:
+    def get_history(self, worker_name: Optional[str] = None) -> deque[SIMPLE_TYPES]:
         """Get the history of this quantity."""
         _unused = (worker_name,)  # noqa: F841
         return self.history
 
-    def increment(self, addend: int = 1, worker_name: Optional[str] = None):
+    def increment(self, addend: SIMPLE_TYPES = 1, worker_name: Optional[str] = None):
         """Increment the value, handling None."""
         if self.value is None:
             self.set(addend)
         else:
-            self.set(self.value + addend)
+            if addend is not None:
+                self.set(self.value + addend)
 
     def marshal_args(  # noqa: C901
-        self, stat_dict: dict[str, SIMPLE_TYPES], worker_name=None, worker_value=None
+        self, stat_dict: SelfStats, worker_name=None, worker_value=None
     ):
         """Marshal arguments for stat function from value dictionary."""
         args = []
@@ -110,12 +110,11 @@ class QueueStat:
 
     def update(
         self,
-        stat_dict: dict[str, SIMPLE_TYPES],
+        stat_dict: SelfStats,
         worker_name: Optional[str] = None,
         worker_value: SIMPLE_TYPES = None,
     ):
         """Apply stat function, if defined, to update the value."""
-        _unused = (worker_name,)  # noqa: F841
         if self.stat_func is not None:
             print(f"in worker stat update {self.name} {self.stat_func}")
             try:
@@ -137,7 +136,6 @@ class QueueWorkerStat(QueueStat):
         stat_func: Optional[Callable[[dict[str, SIMPLE_TYPES]], None]] = None,
         is_result_stat: bool = False,
         is_global_stat: bool = True,
-        is_counter: bool = False,
         history_size: int = 0,
         totalize: bool = True,
         propagate: bool = True,
@@ -148,7 +146,6 @@ class QueueWorkerStat(QueueStat):
             stat_func=stat_func,
             is_result_stat=is_result_stat,
             is_global_stat=is_global_stat,
-            is_counter=is_counter,
             history_size=history_size,
         )
         if totalize:
@@ -156,12 +153,9 @@ class QueueWorkerStat(QueueStat):
         else:
             self.propagate = propagate
         self.totalize = totalize
-        if is_counter:
-            self.value_dict = Counter()
-        else:
-            self.value_dict = {}
+        self.value_dict: dict[str, SIMPLE_TYPES] = {}
         self.history_size = history_size
-        self.history_dict = {}
+        self.history_dict: dict[str, deque[SIMPLE_TYPES]] = {}
 
     def __repr__(self, worker_name: Optional[str] = None):
         """String representation has values."""
@@ -193,15 +187,21 @@ class QueueWorkerStat(QueueStat):
                 return None
             return self.value_dict[worker_name]
 
-    def get_history(self, worker_name: Optional[str] = None) -> SIMPLE_TYPES:
+    def get_history(self, worker_name: Optional[str] = None) -> deque[SIMPLE_TYPES]:
         """Get value from worker store."""
         if worker_name is None:
             return self.history
         else:
             return self.history_dict[worker_name]
 
-    def update(self, stat_dict: dict[str, QueueStat], worker_name=None):
+    def update(
+        self,
+        stat_dict: SelfStats,
+        worker_name: Optional[str] = None,
+        worker_value: SIMPLE_TYPES = None,
+    ):
         """Update worker and global stat values."""
+        _unused = (worker_value,)  # noqa: F841
         if worker_name is None:
             super().update(stat_dict)
             return
@@ -220,30 +220,30 @@ class QueueWorkerStat(QueueStat):
             else:
                 super().update(stat_dict, worker_value=newval)
 
-    def increment(self, addend: int = 1, worker_name: Optional[str] = None):
+    def increment(self, addend: SIMPLE_TYPES = 1, worker_name: Optional[str] = None):
         """Increment worker and global stat values."""
         if worker_name is None:
             super().increment(addend)
         else:
             if worker_name not in self.value_dict:
-                self.value_dict[worker_name] = addend
+                self.set(addend, worker_name=worker_name)
             else:
-                self.value_dict[worker_name] += addend
-        if self.totalize:
-            super().increment(addend)
-
-
-QUEUE_STAT_TYPES = Union[QueueStat | QueueWorkerStat]
+                current_value = self.get(worker_name=worker_name)
+                if current_value is not None and addend is not None:
+                    newval = current_value + addend
+                    self.set(newval, worker_name=worker_name)
+            if self.totalize:
+                super().increment(addend)
 
 
 class QueueStats(UserDict):
     """Dict-like class of queue stats."""
 
-    def __init__(self, stats: list[QUEUE_STAT_TYPES]):
+    def __init__(self, stats: list[QueueStat]):
         """Initialize dict of queue stats."""
         super().__init__({s.name: s for s in stats})
 
-    def update(self, *args, worker_name: Optional[str] = None):
+    def update_stats(self, *args, worker_name: Optional[str] = None) -> None:
         """Update using update methods in queue stats."""
         if len(args) > 0:
             input_dict = args[0].copy()
@@ -260,27 +260,30 @@ class QueueStats(UserDict):
             super().update(*args)
         [self[s].update(self, worker_name=worker_name) for s in self]
 
-    def values(
+    def globals(self) -> dict[str, SIMPLE_TYPES]:
+        """Return global stats."""
+        ret_dict: dict[str, SIMPLE_TYPES] = {}
+        for key in self:
+            if not self[key].is_global_stat:
+                continue
+            ret_dict[key] = self[key].get()
+        return ret_dict
+
+    def results(
         self,
         worker_name: Optional[str] = None,
-        global_only: bool = False,
-        result_only: bool = False,
     ) -> dict[str, SIMPLE_TYPES]:
-        """Return stats, with optional filtering."""
-        ret_dict = {}
-        if global_only:
-            worker_name = None
+        """Return per-result stats."""
+        ret_dict: dict[str, SIMPLE_TYPES] = {}
         for key in self:
-            if global_only and not self[key].is_global_stat:
-                continue
-            if result_only and not self[key].is_result_stat:
+            if not self[key].is_result_stat:
                 continue
             ret_dict[key] = self[key].get(worker_name=worker_name)
         return ret_dict
 
     def worker_stats(self) -> dict[str, dict[str, SIMPLE_TYPES]]:
         """Return per-worker and global worker stats."""
-        ret_dict = {GLOBAL_KEY: {}}
+        ret_dict: dict[str, dict[str, SIMPLE_TYPES]] = {GLOBAL_KEY: {}}
         for key in self:
             if isinstance(self[key], QueueWorkerStat):
                 for worker_name in self[key].value_dict:

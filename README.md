@@ -1,4 +1,4 @@
-# Flardl - Adaptive multi-site downloading
+# Flardl - Adaptive Multi-Site Downloading of Lists
 
 [![PyPI](https://img.shields.io/pypi/v/flardl.svg)][pypi status]
 [![Python Version](https://img.shields.io/pypi/pyversions/flardl)][pypi status]
@@ -10,6 +10,7 @@
 [![Dlrate](https://img.shields.io/pypi/dm/flardl)][dlrate]
 [![Codacy](https://app.codacy.com/project/badge/Grade/3e29ba5ba23d48888372138790ab26f3)][codacy]
 [![Snyk Health](https://snyk.io/advisor/python/flardl/badge.svg)][snyk]
+
 [pypi status]: https://pypi.org/project/flardl/
 [read the docs]: https://flardl.readthedocs.io/
 [tests]: https://github.com/hydrationdynamics/flardl/actions?workflow=Tests
@@ -20,8 +21,11 @@
 [codacy]: https://www.codacy.com/gh/hydrationdynamics/flardl?utm_source=github.com&utm_medium=referral&utm_content=hydrationdynamics/zeigen&utm_campaign=Badge_Grade
 [snyk]: https://snyk.io/advisor/python/flardl
 
-> Who would flardl's bear?
-> [![logo](https://raw.githubusercontent.com/hydrationdynamics/flardl/main/docs/_static/flardl_bear/png)][logo license]
+> Who would flardls bear?
+
+[![logo](https://raw.githubusercontent.com/hydrationdynamics/flardl/main/docs/_static/flardl_bear.png)][logo license]
+
+[logo license]: https://raw.githubusercontent.com/hydrationdynamics/flardl/main/LICENSE.logo.txt
 
 ## Features
 
@@ -34,10 +38,19 @@ The main speed-up is obtained by asynchronous I/O; the use of multiple servers
 provides stability and dynamic adaptability in the face of unknown server loads
 and net weather.
 
+The name _flardl_ could be either an acronym involving downloading, or a
+nonsense word. You pick.
+
 ## Requirements
 
 _Flardl_ is tested under python 3.9 to 3.11, on Linux, MacOS, and
-Windows.
+Windows. Under the hood, _flardl_ relies on [httpx] and is supported
+on whatever platforms that library works under, for both HTTP/1.1 and HTTP/2.
+HTTP/3 support could easily be added via [aioquic] once enough servers are
+running HTTP/3 to make that worthwhile.
+
+[httpx]: https://www.python-httpx.org/
+[aioquic]: https://github.com/aiortc/aioquic
 
 ## Installation
 
@@ -58,7 +71,7 @@ To learn more, see the [Contributor Guide].
 
 ## License
 
-Distributed under the terms of the [MIT license][license],
+Distributed under the terms of the [BSD 3-clause_license][license],
 _Flardl_ is free and open source software.
 
 ## Issues
@@ -82,4 +95,3 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 
 [license]: https://github.com/hydrationdynamics/flardl/blob/main/LICENSE
 [contributor guide]: https://github.com/hydrationdynamics/flardl/blob/main/CONTRIBUTING.md
-[command-line reference]: https://flardl.readthedocs.io/en/latest/usage.html

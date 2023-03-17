@@ -1,3 +1,3 @@
 # Funding
 
-Initial development of zeigen was was undertaken by GenerisBio, LLC.
+Development of zeigen was was undertaken by GenerisBio, LLC.

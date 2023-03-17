@@ -1,8 +1,4 @@
 """Test QueueStats functionality."""
-import sys
-
-# third-party imports
-import pandas as pd
 
 from flardl import QueueStat
 from flardl import QueueStats
@@ -35,8 +31,7 @@ def test_queue_stats():
     start_stat.set(1.0)
     assert start_stat.get() == 1.0
     assert str(start_stat) == "1.0"
-    counter_stat = QueueStat("counter", is_counter=True)
-    assert counter_stat.get() == 0
+    counter_stat = QueueStat("counter")
     counter_stat.increment()
     assert counter_stat.get() == 1
     # test QueueWorkerStat class
@@ -90,7 +85,7 @@ def test_queue_stats():
         + " 'running_avg': None}"
     )
     # test update methods with no arguments
-    qs.update()
+    qs.update_stats()
     assert qs["diff"].get() == 122.0
     assert qs["running_avg"].get() is None
     assert qs.values(result_only=True) == {"result": 212}
@@ -99,7 +94,7 @@ def test_queue_stats():
     new_stat = QueueStat("new")
     # test update with arguments
     qs["non_global"].set(40)  # put in another of these to get up to minimum history
-    qs.update(
+    qs.update_stats(
         {
             "stop_time": 100.0,
             "start_time": 88.0,
@@ -121,17 +116,17 @@ def test_queue_stats():
         "worker1": {"work": 100.0, "non_total": 10},
     }
     # test per-worker history
-    qs.update(
+    qs.update_stats(
         {"work": 300.0, worker_avg_stat.name: worker_avg_stat}, worker_name="worker0"
     )
 
     assert qs["worker_avg"].get() is None
     assert qs["worker_avg"].get(worker_name="worker0") is None
     print(f"before update, worker avg value dict={qs['worker_avg'].value_dict}")
-    qs.update()  # update the global to get the total worker average
+    qs.update_stats()  # update the global to get the total worker average
     print(f"after update, worker avg value dict={qs['worker_avg'].value_dict}")
     assert qs["worker_avg"].get() == 300.0
-    qs.update({"work": 400.0}, worker_name="worker0")
+    qs.update_stats({"work": 400.0}, worker_name="worker0")
     print(f"after second update, worker avg value dict={qs['worker_avg'].value_dict}")
     assert qs["worker_avg"].get(worker_name="worker0") == 375.0
     print(qs.worker_stats())
