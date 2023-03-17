@@ -8,7 +8,7 @@
 [![Repo](https://img.shields.io/github/last-commit/hydrationdynamics/flardl)][repo]
 [![Downloads](https://pepy.tech/badge/flardl)][downloads]
 [![Dlrate](https://img.shields.io/pypi/dm/flardl)][dlrate]
-[![Codacy](https://app.codacy.com/project/badge/Grade/3e29ba5ba23d48888372138790ab26f3)][codacy]
+[![Codacy](https://app.codacy.com/project/badge/Grade/5d86ff69c31d4f8d98ace806a21270dd)][codacy]
 [![Snyk Health](https://snyk.io/advisor/python/flardl/badge.svg)][snyk]
 
 [pypi status]: https://pypi.org/project/flardl/
