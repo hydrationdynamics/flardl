@@ -63,7 +63,6 @@ typeguard = ">=2.13.3"
 xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
 # test deps for this package
-pytest-cov = ">=3.0.0"
 loguru-mypy = ">=0.0.4"
 pandas = ">=1.4.0"
 pandas-stubs = ">=1.5.2.221124"

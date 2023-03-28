@@ -174,12 +174,13 @@ def tests(session: Session) -> None:
         "pandas",
         "pandas-stubs",
         "pytest",
-        "pytest-cov",
+        #"pytest-cov",
         "pytest-datadir-mgr",
         "pygments",
     )
     try:
-        session.run("pytest", "--cov=flardl", *session.posargs)
+        #session.run("pytest", "--cov=flardl", *session.posargs)
+        session.run("coverage", "run", "-m", "pytest", *session.posargs)
         cov_path = Path(".coverage")
         if cov_path.exists():
             cov_path.rename(f".coverage.{random.randrange(100000)}")  # noqa: S311
@@ -211,7 +212,6 @@ def typeguard(session: Session) -> None:
         "pandas-stubs",
         "pygments",
         "pytest",
-        "pytest-cov",
         "pytest-datadir-mgr",
         "typeguard",
     )
