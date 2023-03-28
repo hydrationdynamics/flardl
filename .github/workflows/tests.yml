@@ -23,7 +23,7 @@ jobs:
             # Windows has problems with poetry install
             #          - { python: "3.11", os: "windows-latest", session: "tests" }
             # MacOS breaks coverage for some reason
-            # - { python: "3.11", os: "macos-latest", session: "tests" }
+          - { python: "3.11", os: "macos-latest", session: "tests" }
           - { python: "3.11", os: "ubuntu-latest", session: "typeguard" }
           - { python: "3.11", os: "ubuntu-latest", session: "xdoctest" }
           - { python: "3.11", os: "ubuntu-latest", session: "docs-build" }
