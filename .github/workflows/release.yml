@@ -16,16 +16,20 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+          poetry --version
+
       - name: Set up Python
         uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.11"
           cache: "poetry"
 
-      - name: Install Poetry
+      - name: Set Poetry environment
         run: |
-          pipx install poetry
-          poetry --version
+          poetry env use 3.11 
 
       - name: Check if there is a parent commit
         id: check-parent-commit
