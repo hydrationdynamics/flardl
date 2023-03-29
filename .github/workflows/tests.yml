@@ -38,20 +38,7 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.python }}
-
-      - name: Upgrade pip
-        run: |
-          pip install --constraint=.github/workflows/constraints.txt pip
-          pip --version
-
-      - name: Upgrade pip in virtual environments
-        shell: python
-        run: |
-          import os
-          import pip
-
-          with open(os.environ["GITHUB_ENV"], mode="a") as io:
-              print(f"VIRTUALENV_PIP={pip.__version__}", file=io)
+          cache: "poetry"
 
       - name: Install Poetry
         run: |
@@ -117,6 +104,7 @@ jobs:
         uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.11"
+          cache: "poetry"
 
       - name: Upgrade pip
         run: |
