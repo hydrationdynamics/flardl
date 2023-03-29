@@ -12,7 +12,7 @@ from typing import Union
 
 
 INDEX_KEY = "idx"
-GLOBAL_KEY = "total"
+_GLOBAL_KEY = "total"
 TIME_ROUNDING = 1  # digits, milliseconds
 RATE_ROUNDING = 1  # digits, inverse seconds
 TIME_EPSILON = 0.01  # milliseconds
@@ -26,6 +26,7 @@ class QueueStat:
     def __init__(
         self,
         name: str,
+        label: Optional[str] = None,
         stat_func: Optional[Callable[[dict[str, SIMPLE_TYPES]], None]] = None,
         is_result_stat: bool = False,
         is_global_stat: bool = True,
@@ -33,6 +34,10 @@ class QueueStat:
     ):
         """Initialize naming and storage."""
         self.name = name
+        if label is not None:
+            self.label = label
+        else:
+            self.label = name
         self.stat_func = stat_func
         if self.stat_func is not None:
             self.param_names = [p for p in signature(stat_func).parameters]  # type: ignore
@@ -43,7 +48,7 @@ class QueueStat:
 
     def __repr__(self):
         """Represent string of self with values."""
-        return str(self.value)
+        return f"{self.label}: {self.valuer}"
 
     def set(self, value: SIMPLE_TYPES, worker_name: Optional[str] = None) -> None:
         """Set value, with worker_name for convenience."""
@@ -283,7 +288,7 @@ class QueueStats(UserDict):
 
     def worker_stats(self) -> dict[str, dict[str, SIMPLE_TYPES]]:
         """Return per-worker and global worker stats."""
-        ret_dict: dict[str, dict[str, SIMPLE_TYPES]] = {GLOBAL_KEY: {}}
+        ret_dict: dict[str, dict[str, SIMPLE_TYPES]] = {_GLOBAL_KEY: {}}
         for key in self:
             if isinstance(self[key], QueueWorkerStat):
                 for worker_name in self[key].value_dict:
@@ -291,5 +296,5 @@ class QueueStats(UserDict):
                         ret_dict[worker_name] = {}
                     ret_dict[worker_name][key] = self[key].get(worker_name=worker_name)
                     if self[key].is_global_stat:
-                        ret_dict[GLOBAL_KEY][key] = self[key].get()
+                        ret_dict[_GLOBAL_KEY][key] = self[key].get()
         return ret_dict
