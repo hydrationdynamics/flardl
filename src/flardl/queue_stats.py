@@ -48,7 +48,7 @@ class QueueStat:
 
     def __repr__(self):
         """Represent string of self with values."""
-        return f"{self.label}: {self.valuer}"
+        return f"{self.label}: {self.value}"
 
     def set(self, value: SIMPLE_TYPES, worker_name: Optional[str] = None) -> None:
         """Set value, with worker_name for convenience."""
