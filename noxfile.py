@@ -179,7 +179,6 @@ def tests(session: Session) -> None:
         "pygments",
     )
     try:
-        # session.run("pytest", "--cov=flardl", *session.posargs)
         session.run("coverage", "run", "-m", "pytest", *session.posargs)
         cov_path = Path(".coverage")
         if cov_path.exists():
