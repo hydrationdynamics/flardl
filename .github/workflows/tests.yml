@@ -34,14 +34,19 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3.4.0
 
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v4.5.0
         with:
           python-version: ${{ matrix.python }}
+          cache: "poetry"
 
-      - name: Install Poetry
+      - name: Set Poetry Environment
         run: |
-          pipx install poetry
+          poetry env use ${{ matrix.python }}
           poetry --version
 
       - name: Install Nox
@@ -99,15 +104,9 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3.4.0
 
-      - name: Set up Python
-        uses: actions/setup-python@v4.5.0
-        with:
-          python-version: "3.11"
-
       - name: Install Poetry
         run: |
           pipx install poetry
-          poetry --version
 
       - name: Install Nox
         run: |
