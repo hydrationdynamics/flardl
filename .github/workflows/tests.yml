@@ -111,8 +111,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Poetry
-        run: |
-        pipx install poetry
+        run: pipx install poetry
 
       - name: Install Nox
         run: |
