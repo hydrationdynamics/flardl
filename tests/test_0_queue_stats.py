@@ -1,137 +1,145 @@
-"""Test QueueStats functionality."""
+"""Test overall queue stats functionality."""
+from pytest import raises
 
-from flardl import QueueStat
+from flardl import ALL
+from flardl import AVG
+from flardl import HIST
+from flardl import MAX
+from flardl import MIN
+from flardl import NOBS
+from flardl import RAVG
+from flardl import SUM
+from flardl import VALUE
 from flardl import QueueStats
-from flardl import QueueWorkerStat
+from flardl import WorkerStat
 
 # module imports
 from . import print_docstring
 
 
 @print_docstring()
+def test_worker_stat():
+    """Test per-worker stat functionality."""
+    pi_stat = WorkerStat("pi", [ALL], rounding=3, history_len=2)
+    assert pi_stat.get(VALUE) is None
+    # set first value
+    pi_stat.set(3.14159)
+    assert str(pi_stat) == (
+        "Stat(value=3.142, sum=3.142, n_obs=1, avg=3.142,"
+        + " min=3.142, max=3.142, r_avg=None)"
+    )  # test __repr__
+    assert pi_stat.get(VALUE) == 3.142
+    assert pi_stat.get(MIN) == 3.142
+    assert pi_stat.get(MAX) == 3.142
+    assert pi_stat.get(SUM) == 3.142
+    assert pi_stat.get(AVG) == 3.142
+    assert pi_stat.get(NOBS) == 1
+    assert pi_stat.get(RAVG) is None
+    assert pi_stat.get(HIST) is None
+    # second value
+    pi_stat.set(-3.14159)
+    assert pi_stat.get(VALUE) == -3.142
+    assert pi_stat.get(MIN) == -3.142
+    assert pi_stat.get(MAX) == 3.142
+    assert pi_stat.get(SUM) == 0.0
+    assert pi_stat.get(AVG) == 0.0
+    assert pi_stat.get(NOBS) == 2
+    assert pi_stat.get(RAVG) == 0.0
+    assert [v for v in pi_stat.get(HIST)] == [3.142, -3.142]
+
+    # third value, try an integer
+    pi_stat.set(6)
+    assert (
+        str(pi_stat)
+        == "Stat(value=6, sum=6.0, n_obs=3, avg=2.0, min=-3.142, max=6, r_avg=1.429)"
+    )  # test __repr__
+    assert pi_stat.get(VALUE) == 6
+    assert [v for v in pi_stat.get(HIST)] == [-3.142, 6]
+    assert pi_stat.get(RAVG) == 1.429
+    # now try with per-worker stat
+    bytes_stat = WorkerStat(
+        "bytes in", ["worker0", "worker1", ALL], rounding=0, history_len=2
+    )
+    bytes_stat.set(100, worker="worker0")
+    assert (
+        str(bytes_stat)
+        == "Stat(value=100, sum=100, n_obs=1, avg=100, min=100, max=100, r_avg=None)"
+    )  # test __repr__
+    bytes_stat.set(200, worker="worker1")
+    assert (
+        str(bytes_stat)
+        == "Stat(value=200, sum=300, n_obs=2, avg=150, min=100, max=200, r_avg=150)"
+    )  # test __repr__
+    with raises(KeyError):
+        bytes_stat.set(100, worker="worker2")
+    # test global history values
+    assert [v for v in bytes_stat.get(HIST)] == [100, 200]
+    # test per-worker values
+    assert bytes_stat.get(MIN, worker="worker0") == 100
+    assert bytes_stat.get(MAX, worker="worker0") == 100
+    assert bytes_stat.get(SUM, worker="worker0") == 100
+    assert bytes_stat.get(AVG, worker="worker0") == 100
+    assert bytes_stat.get(NOBS, worker="worker0") == 1
+    assert bytes_stat.get(HIST, worker="worker0") is None
+    assert bytes_stat.get(RAVG, worker="worker0") is None
+    return
+
+
+@print_docstring()
 def test_queue_stats():
     """Test QueueStats functionality."""
-
-    def diff(
-        stop_time: float,
-        start_time: float,
-    ):
-        difference = stop_time - start_time
-        return difference
-
-    def avg(non_global_history: list[float]):
-        return sum(non_global_history) / float(non_global_history.maxlen)
-
-    def worker_avg(work_history: list[float]):
-        print("in worker_avg")
-        return sum(work_history) / float(work_history.maxlen)
-
-    # Test QueueStat class
-    start_stat = QueueStat("start_time")
-    start_stat.set(1.0)
-    assert start_stat.get() == 1.0
-    assert str(start_stat) == "1.0"
-    counter_stat = QueueStat("counter")
-    counter_stat.increment()
-    assert counter_stat.get() == 1
-    # test QueueWorkerStat class
-    work_stat = QueueWorkerStat("work", history_size=4, totalize=True)
-    work_stat.set(300.0, worker_name="worker0")
-    work_stat.set(100.0, worker_name="worker1")
+    worker_list = ["worker0", "worker1"]
+    qs = QueueStats(worker_list, history_len=2)
+    qs.update_stats(
+        {"retirement_t": 800.1, "launch_t": 0.1, "bytes": 2 * 1024 * 1024},
+        worker="worker0",
+    )
+    initial_str = (
+        "{'retirement_t': "
+        + "Stat(value=800.1, sum=800.1, n_obs=1, avg=800.1, "
+        + "min=800.1, max=800.1, r_avg=None),"
+        + " 'launch_t': "
+        + "Stat(value=0.1, sum=0.1, n_obs=1, avg=0.1, min=0.1, "
+        + "max=0.1, r_avg=None),"
+        + " 'service_t': "
+        + "Stat(value=800.0, sum=800.0, n_obs=1, avg=800.0, min=800.0,"
+        + " max=800.0, r_avg=None),"
+        + " 'bytes': "
+        + "Stat(value=2097152, sum=2097152, n_obs=1, avg=2097152, "
+        + "min=2097152, max=2097152, r_avg=None),"
+        + " 'dl_rate': "
+        + "Stat(value=2.5, sum=2.5, n_obs=1, avg=2.5, min=2.5, max=2.5, r_avg=None),"
+        + " 'cum_rate': "
+        + "Stat(value=20, sum=20, n_obs=1, avg=20, min=20, max=20, r_avg=None)}"
+    )
+    assert str(qs) == initial_str
+    assert str(qs["dl_rate"].get(VALUE, "worker0")) == "2.5"
+    assert qs["cum_rate"].get(VALUE, "worker0") == 20
+    qs.update_stats(
+        {"retirement_t": 988.2, "launch_t": 100.2, "bytes": 1.5 * 1024 * 1024},
+        worker="worker1",
+    )
+    assert qs.report_worker_stats() == {
+        "worker0": {"elapsed_t": 0.8, "dl_rate_max": 2.5, "bytes_sum": 2.0},
+        "worker1": {"elapsed_t": 1.0, "dl_rate_max": 1.7, "bytes_sum": 1.5},
+        "all": {"elapsed_t": 1.0, "dl_rate_max": 2.5, "bytes_sum": 3.5},
+    }
+    assert qs.report_file_stats(worker="worker0") == {
+        "retirement_t": 800.1,
+        "launch_t": 0.1,
+        "service_t": 800.0,
+        "bytes": 2097152,
+    }
+    assert qs.report_file_stats(diagnostics=True, worker="worker0") == {
+        "retirement_t": 800.1,
+        "launch_t": 0.1,
+        "service_t": 800.0,
+        "bytes": 2097152,
+        "dl_rate_r_avg": None,
+    }
+    assert qs.report_summary_stats(worker="worker0") == {
+        "Elapsed time, s": 0.8,
+        "Max per-file download rate, /s": 2.5,
+        "Total MB downloaded": 2.0,
+    }
     return
-    assert work_stat.get(worker_name="worker0") == 300.0
-    assert work_stat.get() == 400.0
-    assert str(work_stat) == "400.0"
-    non_total_stat = QueueWorkerStat("non_total", totalize=False, propagate=False)
-    non_total_stat.set(30, worker_name="worker0")
-    non_total_stat.set(10, worker_name="worker1")
-    assert non_total_stat.get(worker_name="worker0") == 30
-    assert non_total_stat.get() is None
-    # define some other possibilities of QueueStat and QueueWorkerStat
-    stop_stat = QueueStat("stop_time")
-    diff_stat = QueueStat("diff", diff)
-    avg_stat = QueueStat("running_avg", avg)
-    non_global_stat = QueueStat("non_global", is_global_stat=False, history_size=3)
-    result_stat = QueueStat("result", is_result_stat=True)
-    worker_avg_stat = QueueWorkerStat("worker_avg", worker_avg)
-    # test QueueStats class get, set, and repr methods
-    qs = QueueStats(
-        stats=[
-            start_stat,
-            stop_stat,
-            counter_stat,
-            non_global_stat,
-            result_stat,
-            work_stat,
-            non_total_stat,
-            diff_stat,
-            avg_stat,
-        ]
-    )
-    qs["stop_time"].set(123.0)
-    qs["counter"].increment(5)
-    qs["non_global"].set(20)
-    qs["result"].set(212)
-    qs["non_total"].set(88)
-    assert qs["result"].get() == 212
-    assert str(qs["result"]) == "212"
-    assert qs["counter"].get() == 6
-    assert qs["work"].get(worker_name="worker0") == 300.0
-    assert qs["work"].get() == 400.0
-    assert str(qs) == (
-        "{'start_time': 1.0, 'stop_time': 123.0,"
-        + " 'counter': 6, 'non_global': 20, 'result': 212,"
-        + " 'work': 400.0, 'non_total': 88, 'diff': None,"
-        + " 'running_avg': None}"
-    )
-    # test update methods with no arguments
-    qs.update_stats()
-    assert qs["diff"].get() == 122.0
-    assert qs["running_avg"].get() is None
-    assert qs.values(result_only=True) == {"result": 212}
-    global_values = qs.values(global_only=True, worker_name="worker0")
-    assert "non_global" not in global_values
-    new_stat = QueueStat("new")
-    # test update with arguments
-    qs["non_global"].set(40)  # put in another of these to get up to minimum history
-    qs.update_stats(
-        {
-            "stop_time": 100.0,
-            "start_time": 88.0,
-            "work": 500.0,
-            "non_global": 30,
-            new_stat.name: new_stat,
-        },
-        worker_name="worker0",
-    )
-    assert qs["new"].get() is None
-    assert qs["running_avg"].get() == 30.0
-    # test deletes on qs
-    del qs["non_global"]
-    del qs["running_avg"]
-    qs["new"].set(-92)
-    assert qs.worker_stats() == {
-        "total": {"work": 900.0, "non_total": 88},
-        "worker0": {"work": 500.0, "non_total": 30},
-        "worker1": {"work": 100.0, "non_total": 10},
-    }
-    # test per-worker history
-    qs.update_stats(
-        {"work": 300.0, worker_avg_stat.name: worker_avg_stat}, worker_name="worker0"
-    )
-
-    assert qs["worker_avg"].get() is None
-    assert qs["worker_avg"].get(worker_name="worker0") is None
-    print(f"before update, worker avg value dict={qs['worker_avg'].value_dict}")
-    qs.update_stats()  # update the global to get the total worker average
-    print(f"after update, worker avg value dict={qs['worker_avg'].value_dict}")
-    assert qs["worker_avg"].get() == 300.0
-    qs.update_stats({"work": 400.0}, worker_name="worker0")
-    print(f"after second update, worker avg value dict={qs['worker_avg'].value_dict}")
-    assert qs["worker_avg"].get(worker_name="worker0") == 375.0
-    print(qs.worker_stats())
-    assert qs.worker_stats() == {
-        "total": {"work": 1600.0, "non_total": 88, "worker_avg": 675.0},
-        "worker0": {"work": 400.0, "non_total": 30, "worker_avg": 375.0},
-        "worker1": {"work": 100.0, "non_total": 10},
-    }

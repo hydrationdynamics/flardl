@@ -30,18 +30,18 @@ keywords = [
 Changelog = "https://github.com/hydrationdynamics/flardl/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.9, <3.12"
+python = ">=3.9,<4"
 aiofiles = ">=22.1.0"
 httpx = {extras = ["http2"], version = ">=0.23.3"}
 loguru = ">=0.6.0"
 tqdm = ">=4.64.1"
+attrs = "^22.2.0"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
 bandit = ">=1.7.4"
 black = ">=21.10b0"
 coverage = {extras = ["toml"], version = ">=6.2"}
-darglint = ">=1.8.1"
 flake8 = ">=4.0.1"
 flake8-bugbear = ">=21.9.2"
 flake8-docstrings = ">=1.6.0"
