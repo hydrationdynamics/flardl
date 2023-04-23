@@ -43,8 +43,9 @@ nonsense word. You pick.
 
 ## Requirements
 
-_Flardl_ is tested under python 3.9 to 3.11, on Linux, MacOS, and
-Windows. Under the hood, _flardl_ relies on [httpx] and is supported
+_Flardl_ is tested under python 3.11, on Linux, MacOS, and
+Windows and under 3.9 and 3.10 on Linux. Under the hood,
+_flardl_ relies on [httpx] and is supported
 on whatever platforms that library works under, for both HTTP/1.1 and HTTP/2.
 HTTP/3 support could easily be added via [aioquic] once enough servers are
 running HTTP/3 to make that worthwhile.

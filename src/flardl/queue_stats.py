@@ -1,6 +1,7 @@
 """Simple queue-associated statistical functions."""
 from collections import UserDict
 from collections import deque
+from typing import Any
 from typing import Optional
 from typing import TypeVar
 from typing import Union
@@ -22,8 +23,7 @@ NOBS = "n_obs"
 HIST = "history"
 RAVG = "r_avg"
 ALL = "all"
-
-STAT_SUBLABELS = {
+STAT_SUBLABELS = {  # pretty labels
     VALUE: "",
     SUM: "total ",
     AVG: "average ",
@@ -33,20 +33,28 @@ STAT_SUBLABELS = {
     HIST: "history ",
     RAVG: "rolling average ",
 }
-
+# constants
 DEFAULT_ROUNDING = 2  # digits after decimal
 TIME_ROUNDING = 1  # digits, milliseconds
 RATE_ROUNDING = 1  # digits, inverse seconds
 TIME_EPSILON = 0.01  # milliseconds
-OPTIONAL_NUMERIC = Union[int, float, None]
+BYTES_TO_MEGABITS = 8.0 / 1024.0 / 1024.0
+# type defs
 NUMERIC_TYPES = Union[int, float]
+OPTIONAL_NUMERIC = Optional[NUMERIC_TYPES]
+OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPES]]
 QueueStatsType = TypeVar("QueueStatsType", bound="QueueStats")
 StatType = TypeVar("StatType", bound="Stat")
+U = TypeVar("U")
 
-BYTES_TO_MEGABITS = 8.0 / 1024.0 / 1024.0
+
+def _nn(inst: Optional[U]) -> U:
+    """Not-none helper to pass mpy."""
+    assert inst is not None
+    return inst
 
 
-def _round(val: int | float, rounding: int) -> float | int:
+def _round(val: NUMERIC_TYPES, rounding: int) -> NUMERIC_TYPES:
     """Round with zero digits returning an int."""
     rounded_val = round(val, rounding)
     if rounding == 0:
@@ -66,10 +74,11 @@ def _set_stat(
         instance.sum = rounded_val
         instance.avg = rounded_val
     else:
-        instance.min = min(rounded_val, instance.min)
-        instance.max = max(rounded_val, instance.max)
-        instance.sum = _round(instance.sum + rounded_val, instance._rounding)
-        instance.avg = _round((instance.sum) / instance.n_obs, instance._rounding)
+        assert instance.min is not None
+        instance.min = min(rounded_val, _nn(instance.min))
+        instance.max = max(rounded_val, _nn(instance.max))
+        instance.sum = _round(_nn(instance.sum) + rounded_val, instance._rounding)
+        instance.avg = _round(_nn(instance.sum) / instance.n_obs, instance._rounding)
     instance._history.append(rounded_val)
     if instance._history_len > 0 and len(instance._history) == instance._history_len:
         instance.r_avg = _round(
@@ -87,17 +96,17 @@ class Stat:
     value: OPTIONAL_NUMERIC = field(default=None, on_setattr=_set_stat)
     sum: OPTIONAL_NUMERIC = None
     n_obs: int = 0
-    avg: float | None = None
+    avg: OPTIONAL_NUMERIC = None
     min: OPTIONAL_NUMERIC = None
     max: OPTIONAL_NUMERIC = None
     _history: deque[NUMERIC_TYPES] = field(init=False, repr=False)
-    r_avg: float | None = None
+    r_avg: OPTIONAL_NUMERIC = None
 
     def __attrs_post_init__(self):
         """Initialize history after history length is set."""
         self._history = deque(maxlen=self._history_len)
 
-    def get(self, key: str = VALUE) -> int | float | None | list[int | float]:
+    def get(self, key: str = VALUE) -> OPTIONAL_NUMERIC_LIST:
         """Return value of attribute."""
         if key is HIST:
             if self._history_len > 0 and len(self._history) == self._history_len:
@@ -132,7 +141,7 @@ class WorkerStat(UserDict):
         return str(self[ALL])
 
     def set(
-        self, value: int | float, worker: str = ALL, set_global: bool = True
+        self, value: NUMERIC_TYPES, worker: str = ALL, set_global: bool = True
     ) -> None:
         """Set value for a worker."""
         self[worker].value = value
@@ -142,10 +151,12 @@ class WorkerStat(UserDict):
     def get(
         self,
         key: str,
+        /,
+        default: Any = None,
         worker: str = ALL,
-        scale: float | None = None,
-        rounding: int | None = None,
-    ) -> int | float | None | list[int | float]:
+        scale: Optional[float] = None,
+        rounding: Optional[int] = None,
+    ) -> OPTIONAL_NUMERIC_LIST:
         """Get stat for a worker."""
         retval = self[worker].get(key)
         if scale is not None:
@@ -169,10 +180,10 @@ class ReportData:
 
     stat: str
     substat: str
-    label: str | None = None
-    name: str | None = None
-    scale: float | None = None
-    rounding: int | None = None
+    label: Optional[str] = None
+    name: Optional[str] = None
+    scale: Optional[float] = None
+    rounding: Optional[int] = None
 
 
 class QueueStats(UserDict):
@@ -216,10 +227,9 @@ class QueueStats(UserDict):
 
     def __init__(self, workers: list[str], history_len: int):
         """Initialize dict of worker stats."""
-        if workers is None:
-            self.workers = [ALL]
-        else:
-            self.workers = workers + [ALL]
+        self.workers: list[str] = [ALL]
+        if workers is not None:
+            self.workers = workers + self.workers
         for report_list in [self.worker_stats, self.file_stats, self.diagnostic_stats]:
             for stat in report_list:
                 if stat.name is None:
@@ -280,7 +290,7 @@ class QueueStats(UserDict):
             ret_dict[key] = self[key].get(VALUE, worker=worker)
         return ret_dict
 
-    def report_worker_stats(self) -> dict[str, dict[str, OPTIONAL_NUMERIC]]:
+    def report_worker_stats(self) -> dict[str, dict[Optional[str], Any]]:
         """Return per-worker stats."""
         ret_dict = {}
         for worker in self.workers:
@@ -298,7 +308,7 @@ class QueueStats(UserDict):
 
     def report_summary_stats(
         self, worker: str = ALL
-    ) -> dict[str, dict[str, OPTIONAL_NUMERIC]]:
+    ) -> dict[Optional[str], OPTIONAL_NUMERIC]:
         """Return summary stats with nice labels for a worker."""
         return {
             s.label: self[s.stat].get(
@@ -309,13 +319,13 @@ class QueueStats(UserDict):
 
     def report_file_stats(
         self, worker: str = ALL, diagnostics: bool = False
-    ) -> dict[str, dict[str, OPTIONAL_NUMERIC]]:
+    ) -> dict[str, OPTIONAL_NUMERIC]:
         """Return file stats."""
         stat_list = self.file_stats
         if diagnostics:
             stat_list += self.diagnostic_stats
         return {
-            s.name: self[s.stat].get(
+            _nn(s.name): self[s.stat].get(
                 s.substat, worker=worker, scale=s.scale, rounding=s.rounding
             )
             for s in stat_list
