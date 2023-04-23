@@ -45,13 +45,12 @@ nonsense word. You pick.
 
 _Flardl_ is tested under python 3.11, on Linux, MacOS, and
 Windows and under 3.9 and 3.10 on Linux. Under the hood,
-_flardl_ relies on [httpx] and is supported
+_flardl_ relies on
+[https://www.python-httpx.org/] [httpx] and is supported
 on whatever platforms that library works under, for both HTTP/1.1 and HTTP/2.
-HTTP/3 support could easily be added via [aioquic] once enough servers are
+HTTP/3 support could easily be added via
+[https://github.com/aiortc/aioquic][aioquic] once enough servers are
 running HTTP/3 to make that worthwhile.
-
-[httpx]: https://www.python-httpx.org/
-[aioquic]: https://github.com/aiortc/aioquic
 
 ## Installation
 
