@@ -41,6 +41,31 @@ and net weather.
 The name _flardl_ could be either an acronym involving downloading, or a
 nonsense word. You pick.
 
+## Theory
+
+Much has been written under the rubric of queueing theory, which we are purposefully discarding here.
+We take a semi-empirical approach based around chemical rate theory; this is in many was inadequate,
+but a full model of the downloading process requires prior knowledge (such as file sizes) we don't
+usually possess.
+
+The simplest version of downloading simply launches every request as quickly as possible at a
+single server and lets
+the server handle the queueing. The server handles overlapped responses, which quickly drives the
+bandwidth to the maximum set by intervening network policy and hardware (such as ISP throttling),
+where it stays until all requests are completed. However, several effects make this a bit too
+simple:
+
+- Most servers will apply a policy that dumps requests once the queue depth gets too high.
+  These requests must be re-queued, and if that is done stupidly then the available
+  bandwidth gets eaten with unfulfilled requests. The queue depth policy is not known
+  in advance, and it may depend on total queue depth that includes other users.
+
+- A server may decide you are executing a Denial-Of-Service (DOS) attack and respond by
+  severely throttling further requests from your IP address. This throttling can last
+  for hours or days, or even permanent black-listing. This "death penalty" can sometimes
+  be triggered by activity of other users at the same institution that hides behind the
+  same public IP address. I have seen practical classes brought to a complete halt by
+
 ## Requirements
 
 _Flardl_ is tested under python 3.11, on Linux, MacOS, and

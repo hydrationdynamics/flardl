@@ -11,50 +11,40 @@ from attrs import asdict
 from attrs import define
 from attrs import field
 
+from . import ALL
+from . import AVG
+from . import BYTES_TO_MEGABITS
+from . import DEFAULT_ROUNDING
+from . import HIST
+from . import MAX
+from . import MIN
+from . import NOBS
+from . import NUMERIC_TYPE
+from . import RATE_ROUNDING
+from . import RAVG
+from . import STAT_SUBLABELS
+from . import SUM
+from . import TIME_EPSILON
+from . import TIME_ROUNDING
+from . import VALUE
 
-# The following globals are also attribute names,
-# don't change one without the other.
-VALUE = "value"
-SUM = "sum"
-AVG = "avg"
-MIN = "min"
-MAX = "max"
-NOBS = "n_obs"
-HIST = "history"
-RAVG = "r_avg"
-ALL = "all"
-STAT_SUBLABELS = {  # pretty labels
-    VALUE: "",
-    SUM: "total ",
-    AVG: "average ",
-    MIN: "min ",
-    MAX: "max ",
-    NOBS: "# ",
-    HIST: "history ",
-    RAVG: "rolling average ",
-}
-# constants
-DEFAULT_ROUNDING = 2  # digits after decimal
-TIME_ROUNDING = 1  # digits, milliseconds
-RATE_ROUNDING = 1  # digits, inverse seconds
-TIME_EPSILON = 0.01  # milliseconds
-BYTES_TO_MEGABITS = 8.0 / 1024.0 / 1024.0
+
 # type defs
-NUMERIC_TYPES = Union[int, float]
-OPTIONAL_NUMERIC = Optional[NUMERIC_TYPES]
-OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPES]]
+OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
+OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
+
 QueueStatsType = TypeVar("QueueStatsType", bound="QueueStats")
 StatType = TypeVar("StatType", bound="Stat")
 U = TypeVar("U")
 
 
 def _nn(inst: Optional[U]) -> U:
-    """Not-none helper to pass mpy."""
+    """Not-none helper to pass mypy."""
     assert inst is not None
     return inst
 
 
-def _round(val: NUMERIC_TYPES, rounding: int) -> NUMERIC_TYPES:
+def _round(val: NUMERIC_TYPE, rounding: int) -> NUMERIC_TYPE:
     """Round with zero digits returning an int."""
     rounded_val = round(val, rounding)
     if rounding == 0:
@@ -62,9 +52,7 @@ def _round(val: NUMERIC_TYPES, rounding: int) -> NUMERIC_TYPES:
     return rounded_val
 
 
-def _set_stat(
-    instance: StatType, attrib: Attribute, val: NUMERIC_TYPES
-) -> NUMERIC_TYPES:
+def _set_stat(instance: StatType, attrib: Attribute, val: NUMERIC_TYPE) -> NUMERIC_TYPE:
     """Round stat value and set derived quantities."""
     rounded_val = _round(val, instance._rounding)
     instance.n_obs += 1
@@ -99,7 +87,7 @@ class Stat:
     avg: OPTIONAL_NUMERIC = None
     min: OPTIONAL_NUMERIC = None
     max: OPTIONAL_NUMERIC = None
-    _history: deque[NUMERIC_TYPES] = field(init=False, repr=False)
+    _history: deque[NUMERIC_TYPE] = field(init=False, repr=False)
     r_avg: OPTIONAL_NUMERIC = None
 
     def __attrs_post_init__(self):
@@ -141,7 +129,7 @@ class WorkerStat(UserDict):
         return str(self[ALL])
 
     def set(
-        self, value: NUMERIC_TYPES, worker: str = ALL, set_global: bool = True
+        self, value: NUMERIC_TYPE, worker: str = ALL, set_global: bool = True
     ) -> None:
         """Set value for a worker."""
         self[worker].value = value

@@ -1,17 +1,17 @@
-"""Test overall queue stats functionality."""
+"""Test queue stats functionality."""
 from pytest import raises
 
-from flardl import ALL
-from flardl import AVG
-from flardl import HIST
-from flardl import MAX
-from flardl import MIN
-from flardl import NOBS
-from flardl import RAVG
-from flardl import SUM
-from flardl import VALUE
-from flardl import QueueStats
-from flardl import WorkerStat
+from flardl.queue_stats import ALL
+from flardl.queue_stats import AVG
+from flardl.queue_stats import HIST
+from flardl.queue_stats import MAX
+from flardl.queue_stats import MIN
+from flardl.queue_stats import NOBS
+from flardl.queue_stats import RAVG
+from flardl.queue_stats import SUM
+from flardl.queue_stats import VALUE
+from flardl.queue_stats import QueueStats
+from flardl.queue_stats import WorkerStat
 
 # module imports
 from . import print_docstring
