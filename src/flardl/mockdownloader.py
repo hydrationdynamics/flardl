@@ -33,7 +33,11 @@ class MockDownloader(QueueWorker):
     TIME_ROUND = 4
 
     def __init__(
-        self, ident_no: int, logger: loguru.Logger | None = None, quiet: bool = False
+        self,
+        ident_no: int,
+        logger: loguru.Logger | None = None,
+        quiet: bool = False,
+        write_file: bool = False,
     ):
         """Init with id number."""
         super().__init__(f"W{ident_no}", logger=logger, quiet=quiet)
@@ -47,6 +51,7 @@ class MockDownloader(QueueWorker):
         self.launch_rate = self.LAUNCH_RATE_MAX / (ident_no + 1.0)
         self.retirement_rate = self.launch_rate / self.LAUNCH_RETIREMENT_RATIO
         self.output_path = Path("./tmp")
+        self.write_file = write_file
 
     async def limiter(self):
         """Fake rate-limiting via sleep for a time dependent on worker."""
@@ -79,9 +84,9 @@ class MockDownloader(QueueWorker):
         dl_bytes = rng.zipf_with_min(
             minimum=self.ZIPF_MIN, scale=self.ZIPF_SCALE, exponent=self.ZIPF_EXPONENT
         )
-        dl_str = "a" * dl_bytes
-        async with aiofiles.open(filepath, mode="w") as f:
-            await f.write(dl_str)
+        if self.write_file:
+            async with aiofiles.open(filepath, mode="w") as f:
+                await f.write("a" * dl_bytes)
         # simulate download time with a sleep
         latency = rng.get_wait_time(self.retirement_rate)
         receive_time = int(dl_bytes / self.DL_CHUNK_SIZE) / self.DL_RATE
