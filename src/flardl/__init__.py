@@ -1,6 +1,7 @@
 """Flardl--download list of URLs from a list of federated servers."""
 import abc
 import asyncio
+import random
 from time import time
 from typing import Optional
 from typing import Union
@@ -41,7 +42,7 @@ TIME_ROUNDING = 1  # digits, milliseconds
 RATE_ROUNDING = 1  # digits, inverse seconds
 TIME_EPSILON = 0.01  # milliseconds
 BYTES_TO_MEGABITS = 8.0 / 1024.0 / 1024.0
-RANDOM_SEED = 47
+RANDOM_SEED = 87507
 DEFAULT_ZIPF_EXPONENT = 1.3
 # type defs
 NUMERIC_TYPE = Union[int, float]
@@ -55,7 +56,7 @@ class RandomValueGenerator:
 
     def __init__(self, seed: int = RANDOM_SEED):
         """Init random value generator with seed."""
-        self.rng = np.random.default_rng(seed)
+        self.rng = np.random.default_rng(seed=seed)
 
     def get_wait_time(self, rate: float) -> float:
         """Given rate, return wait time from an exponential distribution."""
@@ -88,6 +89,8 @@ class RandomValueGenerator:
 
 
 random_value_generator = RandomValueGenerator()
+# seed python's RNG also for reproducibility of asyncio
+random.seed(RANDOM_SEED)
 
 
 class NonStringIterable(metaclass=abc.ABCMeta):

@@ -33,12 +33,8 @@ def test_multidispatcher():
     max_retries = 2
     quiet = True
     arg_dict = {
-        "int_arg": [i for i in range(n_items)],
-        "str_arg": "blah",
-        "float_arg": [
-            round(rng.rng.uniform(low=1, high=10), 2) for i in range(n_items)
-        ],
-        "short_arg": [i + n_items for i in range(n_items - 1)],
+        "code": [f"{i:04}" for i in range(n_items)],
+        "file_type": "txt",
     }
     logger = loguru.logger
     logger.remove()

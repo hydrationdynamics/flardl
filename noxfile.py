@@ -158,6 +158,7 @@ def mypy(session: Session) -> None:
         "pandas",
         "pandas-stubs",
         "pytest",
+        "types-aiofiles",
     )
     session.run("mypy", *args)
     if not session.posargs:
@@ -173,7 +174,6 @@ def tests(session: Session) -> None:
         "pandas",
         "pandas-stubs",
         "pytest",
-        # "pytest-cov",
         "pytest-datadir-mgr",
         "pygments",
     )
@@ -211,6 +211,7 @@ def typeguard(session: Session) -> None:
         "pygments",
         "pytest",
         "pytest-datadir-mgr",
+        "types-aiofiles",
         "typeguard",
     )
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)

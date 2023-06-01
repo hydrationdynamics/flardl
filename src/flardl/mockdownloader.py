@@ -2,19 +2,16 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 
 # third-party imports
+import aiofiles
 import loguru
 
 # module imports
 from . import random_value_generator as rng
 from .multidispatcher import QueueWorker
 from .multidispatcher import ResultsQueue
-
-
-ZIPF_EXPONENT = 1.4
-ZIPF_SCALE = 1000
-ZIPF_MIN = 1024
 
 
 class MockDownloader(QueueWorker):
@@ -28,12 +25,18 @@ class MockDownloader(QueueWorker):
     )
     LAUNCH_RETIREMENT_RATIO = 1.0
     LAUNCH_RATE_MAX = 100.0
+    ZIPF_EXPONENT = 1.5  # this blows up as it gets closer to 1
+    ZIPF_SCALE = 1000
+    ZIPF_MIN = 1024
+    DL_RATE = 10000  # chunks/sec
+    DL_CHUNK_SIZE = 1500  # bytes per chunk (packet)
+    TIME_ROUND = 4
 
     def __init__(
         self, ident_no: int, logger: loguru.Logger | None = None, quiet: bool = False
     ):
         """Init with id number."""
-        super().__init__(f"Worker{ident_no}", logger=logger, quiet=quiet)
+        super().__init__(f"W{ident_no}", logger=logger, quiet=quiet)
         self.quiet = quiet
         self.ident = ident_no
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
@@ -43,6 +46,7 @@ class MockDownloader(QueueWorker):
         self.work_qty_name = "bytes"
         self.launch_rate = self.LAUNCH_RATE_MAX / (ident_no + 1.0)
         self.retirement_rate = self.launch_rate / self.LAUNCH_RETIREMENT_RATIO
+        self.output_path = Path("./tmp")
 
     async def limiter(self):
         """Fake rate-limiting via sleep for a time dependent on worker."""
@@ -53,12 +57,12 @@ class MockDownloader(QueueWorker):
         result_q: ResultsQueue,
         worker_count: int,
         idx: int,
-        int_arg: int | None = None,
-        str_arg: str | None = None,
-        float_arg: float | None = None,
-        short_arg: list | None = None,
+        code: str | None = None,
+        file_type: str | None = None,
     ):
         """Do a work unit."""
+        filename = str(code) + "." + str(file_type)
+        filepath = self.output_path / filename
         if idx in self.SOFT_FAILS:
             async with asyncio.Lock():
                 self.n_soft_fails += 1
@@ -71,10 +75,18 @@ class MockDownloader(QueueWorker):
             raise ValueError(f"Job {idx} failed on {self.name} (expected).")
         elif not self.quiet:
             self._logger.info(f"{self.name} working on job {idx}...")
-        # Put results on out queue
-        work_qty = rng.zipf_with_min(
-            minimum=ZIPF_MIN, scale=ZIPF_SCALE, exponent=ZIPF_EXPONENT
+        # write fake output
+        dl_bytes = rng.zipf_with_min(
+            minimum=self.ZIPF_MIN, scale=self.ZIPF_SCALE, exponent=self.ZIPF_EXPONENT
         )
-        # simulate work with a sleep
-        await asyncio.sleep(rng.get_wait_time(self.retirement_rate))
-        await self.queue_results(result_q, worker_count, idx, work_qty, label=str_arg)
+        dl_str = "a" * dl_bytes
+        async with aiofiles.open(filepath, mode="w") as f:
+            await f.write(dl_str)
+        # simulate download time with a sleep
+        latency = rng.get_wait_time(self.retirement_rate)
+        receive_time = int(dl_bytes / self.DL_CHUNK_SIZE) / self.DL_RATE
+        dl_time = round(latency + receive_time, self.TIME_ROUND)
+        await asyncio.sleep(dl_time)
+        await self.queue_results(
+            result_q, worker_count, idx, dl_bytes, filename=filename
+        )
