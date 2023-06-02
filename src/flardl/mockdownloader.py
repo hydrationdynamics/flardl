@@ -52,6 +52,7 @@ class MockDownloader(QueueWorker):
         self.retirement_rate = self.launch_rate / self.LAUNCH_RETIREMENT_RATIO
         self.output_path = Path("./tmp")
         self.write_file = write_file
+        self._lock = asyncio.Lock()
 
     async def limiter(self):
         """Fake rate-limiting via sleep for a time dependent on worker."""
@@ -69,13 +70,13 @@ class MockDownloader(QueueWorker):
         filename = str(code) + "." + str(file_type)
         filepath = self.output_path / filename
         if idx in self.SOFT_FAILS:
-            async with asyncio.Lock():
+            async with self._lock:
                 self.n_soft_fails += 1
                 if idx in self.RESCUE_SOFT_FAILS:
                     self.SOFT_FAILS.remove(idx)
             raise ConnectionError(f"{self.name} aborted job {idx} (expected).")
         elif idx in self.HARD_FAILS:
-            async with asyncio.Lock():
+            async with self._lock:
                 self.n_hard_fails += 1
             raise ValueError(f"Job {idx} failed on {self.name} (expected).")
         elif not self.quiet:

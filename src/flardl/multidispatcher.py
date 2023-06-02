@@ -48,6 +48,7 @@ class ArgumentQueue(asyncio.Queue):
         self.timer = timer
         self.launch_rate = 0.0
         self.worker_counter: Counter[str] = Counter()
+        self._lock = asyncio.Lock()
 
     async def put(
         self,
@@ -59,7 +60,7 @@ class ArgumentQueue(asyncio.Queue):
         """Put on results queue and update stats."""
         worker_name = cast(str, worker_name)
         worker_count = cast(int, worker_count)
-        async with asyncio.Lock():
+        async with self._lock:
             del self.inflight[worker_name][worker_count]
         await super().put(args)
 
@@ -67,7 +68,7 @@ class ArgumentQueue(asyncio.Queue):
         """Track de-queuing by worker."""
         worker_name = cast(str, worker_name)
         q_entry = await super().get(**kwargs)
-        async with asyncio.Lock():
+        async with self._lock:
             self.worker_counter[worker_name] += 1
             worker_count = self.worker_counter[worker_name]
             if worker_name not in self.inflight:
@@ -101,6 +102,7 @@ class ResultsQueue(asyncio.Queue):
         self.inflight = in_process
         self.count = 0
         self.timer = timer
+        self._lock = asyncio.Lock()
 
     async def put(
         self,
@@ -115,7 +117,7 @@ class ResultsQueue(asyncio.Queue):
         launch_stats = self.inflight[worker_name][worker_count]
         for result_name in ["launch_ms"]:
             args[result_name] = launch_stats[result_name]
-        async with asyncio.Lock():
+        async with self._lock:
             del self.inflight[worker_name][worker_count]
         await super().put(args)
 
@@ -143,6 +145,7 @@ class FailureQueue(asyncio.Queue):
         self.inflight = in_process
         self.count = 0
         self.timer = timer
+        self._lock = asyncio.Lock()
 
     async def put(
         self,
@@ -154,7 +157,7 @@ class FailureQueue(asyncio.Queue):
         """Put on results queue and update stats."""
         worker_name = cast(str, worker_name)
         worker_count = cast(int, worker_count)
-        async with asyncio.Lock():
+        async with self._lock:
             del self.inflight[worker_name][worker_count]
         await super().put(args)
 
@@ -219,6 +222,7 @@ class MultiDispatcher:
         self.n_exceptions = 0
         self.quiet = quiet
         self.queue_stats = QueueStats(worker_list, history_len=history_len)
+        self._lock = asyncio.Lock()
 
     async def run(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Run the multidispatcher queue."""
@@ -268,7 +272,7 @@ class MultiDispatcher:
             except worker.soft_exceptions as e:
                 # Errors to be requeued by worker, unless too many
                 idx = kwargs[INDEX_KEY]
-                async with asyncio.Lock():
+                async with self._lock:
                     idx = kwargs[INDEX_KEY]
                     self.n_exceptions += 1
                     if idx not in self.exception_counter:
