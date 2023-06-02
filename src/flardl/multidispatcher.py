@@ -4,11 +4,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from collections import Counter
-from collections.abc import Iterable
-from itertools import zip_longest
 from typing import Any
-from typing import Optional
-from typing import Type
 from typing import Union
 from typing import cast
 
@@ -21,7 +17,6 @@ from . import INDEX_KEY
 from . import RATE_ROUNDING
 from . import TIME_EPSILON
 from . import MillisecondTimer
-from . import NonStringIterable
 from .queue_stats import QueueStats
 
 
@@ -38,7 +33,7 @@ class ArgumentQueue(asyncio.Queue):
 
     def __init__(
         self,
-        arg_dict: dict[str, NonStringIterable | SIMPLE_TYPES],
+        arg_list: list[dict[str, SIMPLE_TYPES]],
         in_process: dict[str, Any],
         timer: MillisecondTimer,
         /,
@@ -46,22 +41,9 @@ class ArgumentQueue(asyncio.Queue):
     ):
         """Initialize data structure for in-flight stats."""
         super().__init__(maxsize)
-        iterable_args = [
-            k for k in arg_dict if isinstance(arg_dict[k], NonStringIterable)
-        ]
-        idx = 0
-        for iter_tuple in zip_longest(
-            *[cast(Iterable, arg_dict[k]) for k in iterable_args]
-        ):
-            args: dict[str, SIMPLE_TYPES] = {INDEX_KEY: idx}
-            for key in arg_dict.keys():
-                if key in iterable_args:
-                    args[key] = iter_tuple[iterable_args.index(key)]
-                else:
-                    args[key] = cast(SIMPLE_TYPES, arg_dict[key])
-            idx += 1
+        for args in arg_list:
             self.put_nowait(args)
-        self.n_args = idx
+        self.n_args = len(arg_list)
         self.inflight = in_process
         self.timer = timer
         self.launch_rate = 0.0
@@ -190,14 +172,14 @@ class InstrumentedQueues:
 
     def __init__(
         self,
-        arg_dict: dict[str, Any],
+        arg_list: list[dict[str, Any]],
         /,
         maxsize: int = 0,
     ):
         """Initialize queues and instrumentation."""
         self.inflight: dict[str, SIMPLE_TYPES] = {}
         self.timer = MillisecondTimer()
-        self.argument_queue = ArgumentQueue(arg_dict, self.inflight, self.timer)
+        self.argument_queue = ArgumentQueue(arg_list, self.inflight, self.timer)
         self.results_queue = ResultsQueue(self.inflight, self.timer)
         self.failed_queue = FailureQueue(self.inflight, self.timer)
         self.n_args = self.argument_queue.n_args
@@ -238,9 +220,9 @@ class MultiDispatcher:
         self.quiet = quiet
         self.queue_stats = QueueStats(worker_list, history_len=history_len)
 
-    async def run(self, arg_dict: dict[str, Any]):
+    async def run(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Run the multidispatcher queue."""
-        queues = InstrumentedQueues(arg_dict)
+        queues = InstrumentedQueues(arg_list)
         arg_q = queues.argument_queue
         result_q = queues.results_queue
         failed_q = queues.failed_queue
@@ -314,9 +296,9 @@ class MultiDispatcher:
             # Notify the queue that the item has been processed.
             arg_q.task_done()
 
-    def main(self, arg_dict: dict[str, Any]):
+    def main(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Start the multidispatcher queue."""
-        return asyncio.run(self.run(arg_dict))
+        return asyncio.run(self.run(arg_list))
 
 
 class QueueWorker:

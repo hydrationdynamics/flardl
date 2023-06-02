@@ -1,12 +1,8 @@
 """Flardl--download list of URLs from a list of federated servers."""
-import abc
-import asyncio
 import random
 from time import time
 from typing import Optional
 from typing import Union
-
-import _collections_abc as cabc
 
 # third-party imports
 import numpy as np
@@ -49,6 +45,7 @@ NUMERIC_TYPE = Union[int, float]
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
 TIME_ROUNDING = 1  # digits, milliseconds
+SIMPLE_TYPES = Union[int, float, bool, str, None]
 
 
 class RandomValueGenerator:
@@ -91,28 +88,6 @@ class RandomValueGenerator:
 random_value_generator = RandomValueGenerator()
 # seed python's RNG also for reproducibility of asyncio
 random.seed(RANDOM_SEED)
-
-
-class NonStringIterable(metaclass=abc.ABCMeta):
-    """A class to find iterables that are not strings."""
-
-    __slots__ = ()
-
-    @abc.abstractmethod
-    def __iter__(self):
-        """Fake iteration."""
-        while False:
-            yield None
-
-    @classmethod
-    def __subclasshook__(cls, c):
-        """Check if non-string iterable."""
-        if cls is NonStringIterable:
-            if issubclass(c, str):
-                return False
-
-            return cabc._check_methods(c, "__iter__")
-        return NotImplemented
 
 
 class MillisecondTimer:

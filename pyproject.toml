@@ -33,10 +33,13 @@ Changelog = "https://github.com/hydrationdynamics/flardl/releases"
 [tool.poetry.dependencies]
 python = ">=3.9,<4"
 aiofiles = ">=22.1.0"
+anyio = ">=3.7.0"
+attrs = "^22.2.0"
 httpx = {extras = ["http2"], version = ">=0.23.3"}
 loguru = ">=0.6.0"
 tqdm = ">=4.64.1"
-attrs = "^22.2.0"
+uvloop = ">=0.17.0"
+
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
