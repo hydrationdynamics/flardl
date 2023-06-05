@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import random
 import sys
 from collections import Counter
 from typing import Any
@@ -9,11 +10,13 @@ from typing import Union
 from typing import cast
 
 # third-party imports
+import anyio
 import loguru
 from loguru import logger as mylogger
 
 from . import DEFAULT_MAX_RETRIES
 from . import INDEX_KEY
+from . import RANDOM_SEED
 from . import RATE_ROUNDING
 from . import TIME_EPSILON
 from . import MillisecondTimer
@@ -48,7 +51,7 @@ class ArgumentQueue(asyncio.Queue):
         self.timer = timer
         self.launch_rate = 0.0
         self.worker_counter: Counter[str] = Counter()
-        self._lock = asyncio.Lock()
+        self._lock = anyio.Lock()
 
     async def put(
         self,
@@ -102,7 +105,7 @@ class ResultsQueue(asyncio.Queue):
         self.inflight = in_process
         self.count = 0
         self.timer = timer
-        self._lock = asyncio.Lock()
+        self._lock = anyio.Lock()
 
     async def put(
         self,
@@ -145,7 +148,7 @@ class FailureQueue(asyncio.Queue):
         self.inflight = in_process
         self.count = 0
         self.timer = timer
-        self._lock = asyncio.Lock()
+        self._lock = anyio.Lock()
 
     async def put(
         self,
@@ -168,34 +171,6 @@ class FailureQueue(asyncio.Queue):
             fail_list.append(self.get_nowait())
         self.count = len(fail_list)
         return sorted(fail_list, key=get_index_value)
-
-
-class InstrumentedQueues:
-    """Queues that track processing time and results."""
-
-    def __init__(
-        self,
-        arg_list: list[dict[str, Any]],
-        /,
-        maxsize: int = 0,
-    ):
-        """Initialize queues and instrumentation."""
-        self.inflight: dict[str, SIMPLE_TYPES] = {}
-        self.timer = MillisecondTimer()
-        self.argument_queue = ArgumentQueue(arg_list, self.inflight, self.timer)
-        self.results_queue = ResultsQueue(self.inflight, self.timer)
-        self.failed_queue = FailureQueue(self.inflight, self.timer)
-        self.n_args = self.argument_queue.n_args
-
-    def stats(self):
-        """Report per-worker and global stats."""
-        stat_dict = {
-            "jobs_in": self.n_args,
-            "finished": self.results_queue.count,
-            "failed": self.failed_queue.count,
-            "workers": len(self.inflight),
-        }
-        return stat_dict
 
 
 class MultiDispatcher:
@@ -222,32 +197,28 @@ class MultiDispatcher:
         self.n_exceptions = 0
         self.quiet = quiet
         self.queue_stats = QueueStats(worker_list, history_len=history_len)
-        self._lock = asyncio.Lock()
+        self._lock = anyio.Lock()
+        self.inflight: dict[str, SIMPLE_TYPES] = {}
+        self.timer = MillisecondTimer()
 
     async def run(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Run the multidispatcher queue."""
-        queues = InstrumentedQueues(arg_list)
-        arg_q = queues.argument_queue
-        result_q = queues.results_queue
-        failed_q = queues.failed_queue
-        dispatchers = [
-            asyncio.create_task(self.dispatcher(w, arg_q, result_q, failed_q))
-            for w in self.workers
-        ]
-
-        # Wait until all requests are done.
-        await arg_q.join()
-
-        # Cancel dispatchers waiting for arguments.
-        [d.cancel() for d in dispatchers]
-
-        # Wait until all dispatchers are cancelled.
-        await asyncio.gather(*dispatchers, return_exceptions=True)
+        arg_q = ArgumentQueue(arg_list, self.inflight, self.timer)
+        result_q = ResultsQueue(self.inflight, self.timer)
+        failed_q = FailureQueue(self.inflight, self.timer)
+        async with anyio.create_task_group() as tg:
+            for worker in self.workers:
+                tg.start_soon(self.dispatcher, worker, arg_q, result_q, failed_q)
 
         # Process results into pandas data frame in input order.
         results = result_q.get_results()
         fails = failed_q.get_results()
-        stats = queues.stats()
+        stats = {
+            "jobs_in": len(arg_list),
+            "finished": result_q.count,
+            "failed": failed_q.count,
+            "workers": len(self.workers),
+        }
         return results, fails, stats
 
     async def dispatcher(
@@ -258,7 +229,7 @@ class MultiDispatcher:
         failed_q: FailureQueue,
     ):
         """Dispatch tasks to worker functions and handle exceptions."""
-        while True:
+        while not arg_q.empty():
             # Get a set of arguments from the queue.
             kwargs, worker_count = await arg_q.get(worker_name=worker.name)
             # Do rate limiting, if a limiter is found in worker.
@@ -302,7 +273,10 @@ class MultiDispatcher:
 
     def main(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Start the multidispatcher queue."""
-        return asyncio.run(self.run(arg_list))
+        random.seed(RANDOM_SEED)
+        return anyio.run(
+            self.run, arg_list, backend="asyncio", backend_options={"use_uvloop": True}
+        )
 
 
 class QueueWorker:

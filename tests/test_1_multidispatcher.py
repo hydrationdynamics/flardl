@@ -90,7 +90,10 @@ def test_multidispatcher():
     logger.remove()
     logger.add(sys.stderr, format=_stderr_format_func)
     runner = MultiDispatcher(
-        [MockDownloader(i, logger, quiet=quiet) for i in range(n_consumers)],
+        [
+            MockDownloader(i, logger, quiet=quiet, write_file=True)
+            for i in range(n_consumers)
+        ],
         max_retries=max_retries,
         quiet=quiet,
     )

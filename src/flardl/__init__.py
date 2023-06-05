@@ -86,8 +86,6 @@ class RandomValueGenerator:
 
 
 random_value_generator = RandomValueGenerator()
-# seed python's RNG also for reproducibility of asyncio
-random.seed(RANDOM_SEED)
 
 
 class MillisecondTimer:

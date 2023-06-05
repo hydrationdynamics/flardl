@@ -1,11 +1,10 @@
 """Mock downloads using sleeps."""
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 
 # third-party imports
-import aiofiles
+import anyio
 import loguru
 
 # module imports
@@ -25,7 +24,7 @@ class MockDownloader(QueueWorker):
     )
     LAUNCH_RETIREMENT_RATIO = 1.0
     LAUNCH_RATE_MAX = 100.0
-    ZIPF_EXPONENT = 1.5  # this blows up as it gets closer to 1
+    ZIPF_EXPONENT = 1.6  # this blows up as it gets closer to 1
     ZIPF_SCALE = 1000
     ZIPF_MIN = 1024
     DL_RATE = 10000  # chunks/sec
@@ -52,11 +51,11 @@ class MockDownloader(QueueWorker):
         self.retirement_rate = self.launch_rate / self.LAUNCH_RETIREMENT_RATIO
         self.output_path = Path("./tmp")
         self.write_file = write_file
-        self._lock = asyncio.Lock()
+        self._lock = anyio.Lock()
 
     async def limiter(self):
         """Fake rate-limiting via sleep for a time dependent on worker."""
-        await asyncio.sleep(rng.get_wait_time(self.launch_rate))
+        await anyio.sleep(rng.get_wait_time(self.launch_rate))
 
     async def worker(
         self,
@@ -86,13 +85,13 @@ class MockDownloader(QueueWorker):
             minimum=self.ZIPF_MIN, scale=self.ZIPF_SCALE, exponent=self.ZIPF_EXPONENT
         )
         if self.write_file:
-            async with aiofiles.open(filepath, mode="w") as f:
+            async with await anyio.open_file(filepath, mode="w") as f:
                 await f.write("a" * dl_bytes)
         # simulate download time with a sleep
         latency = rng.get_wait_time(self.retirement_rate)
         receive_time = int(dl_bytes / self.DL_CHUNK_SIZE) / self.DL_RATE
         dl_time = round(latency + receive_time, self.TIME_ROUND)
-        await asyncio.sleep(dl_time)
+        await anyio.sleep(dl_time)
         await self.queue_results(
             result_q, worker_count, idx, dl_bytes, filename=filename
         )
