@@ -37,7 +37,7 @@ attrs = "^22.2.0"
 httpx = {extras = ["http2"], version = ">=0.23.3"}
 loguru = ">=0.6.0"
 tqdm = ">=4.64.1"
-uvloop = ">=0.17.0"
+uvloop = { version = ">=0.17.0", markers = "sys_platform != 'win32'"}
 
 
 [tool.poetry.dev-dependencies]

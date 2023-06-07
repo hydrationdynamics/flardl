@@ -248,8 +248,12 @@ class MultiDispatcher:
     def main(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Start the multidispatcher queue."""
         random.seed(RANDOM_SEED)
+        if sys.platform == "win32":
+            backend_options = {}
+        else:
+            backend_options = {"use_uvloop": True}
         return anyio.run(
-            self.run, arg_list, backend="asyncio", backend_options={"use_uvloop": True}
+            self.run, arg_list, backend="asyncio", backend_options=backend_options
         )
 
 
