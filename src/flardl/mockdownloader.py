@@ -10,7 +10,7 @@ import loguru
 # module imports
 from . import random_value_generator as rng
 from .multidispatcher import QueueWorker
-from .multidispatcher import ResultsQueue
+from .multidispatcher import ResultStream
 
 
 class MockDownloader(QueueWorker):
@@ -59,7 +59,7 @@ class MockDownloader(QueueWorker):
 
     async def worker(
         self,
-        result_q: ResultsQueue,
+        result_q: ResultStream,
         worker_count: int,
         idx: int,
         code: str | None = None,

@@ -1,10 +1,11 @@
 """Work is dispatched to multiple workers and results collected via asynchio queues."""
 from __future__ import annotations
 
-import asyncio
+import math
 import random
 import sys
 from collections import Counter
+from itertools import takewhile
 from typing import Any
 from typing import Union
 from typing import cast
@@ -31,21 +32,21 @@ def get_index_value(item: dict[str, SIMPLE_TYPES]) -> int:
     return cast(int, item[INDEX_KEY])
 
 
-class ArgumentQueue(asyncio.Queue):
-    """A queue of dictionaries to be used as arguments."""
+class ArgumentStream:
+    """A stream of dictionaries to be used as arguments."""
 
     def __init__(
         self,
         arg_list: list[dict[str, SIMPLE_TYPES]],
         in_process: dict[str, Any],
         timer: MillisecondTimer,
-        /,
-        maxsize: int = 0,
     ):
         """Initialize data structure for in-flight stats."""
-        super().__init__(maxsize)
+        self.send_stream, self.receive_stream = anyio.create_memory_object_stream(
+            max_buffer_size=math.inf
+        )
         for args in arg_list:
-            self.put_nowait(args)
+            self.send_stream.send_nowait(args)
         self.n_args = len(arg_list)
         self.inflight = in_process
         self.timer = timer
@@ -65,12 +66,12 @@ class ArgumentQueue(asyncio.Queue):
         worker_count = cast(int, worker_count)
         async with self._lock:
             del self.inflight[worker_name][worker_count]
-        await super().put(args)
+        await self.send_stream.send(args)
 
     async def get(self, /, worker_name: str | None = None, **kwargs):
         """Track de-queuing by worker."""
         worker_name = cast(str, worker_name)
-        q_entry = await super().get(**kwargs)
+        q_entry = self.receive_stream.receive_nowait(**kwargs)
         async with self._lock:
             self.worker_counter[worker_name] += 1
             worker_count = self.worker_counter[worker_name]
@@ -90,21 +91,21 @@ class ArgumentQueue(asyncio.Queue):
         return q_entry, worker_count
 
 
-class ResultsQueue(asyncio.Queue):
-    """A queue with method to produce an ordered list of results."""
+class FailureStream:
+    """Anyio stream to track failures."""
+
+    launch_stats_out: list[str] = []
 
     def __init__(
         self,
         in_process: dict[str, Any],
-        timer: MillisecondTimer,
-        /,
-        maxsize: int = 0,
     ) -> None:
         """Init stats for queue."""
-        super().__init__(maxsize)
+        self.send_stream, self.receive_stream = anyio.create_memory_object_stream(
+            max_buffer_size=math.inf
+        )
         self.inflight = in_process
         self.count = 0
-        self.timer = timer
         self._lock = anyio.Lock()
 
     async def put(
@@ -118,63 +119,32 @@ class ResultsQueue(asyncio.Queue):
         worker_name = cast(str, worker_name)
         worker_count = cast(int, worker_count)
         launch_stats = self.inflight[worker_name][worker_count]
-        for result_name in ["launch_ms"]:
+        for result_name in self.launch_stats_out:
             args[result_name] = launch_stats[result_name]
         async with self._lock:
+            self.count += 1
             del self.inflight[worker_name][worker_count]
-        await super().put(args)
+        await self.send_stream.send(args)
 
-    def get_results(self) -> list[dict[str, SIMPLE_TYPES]]:
-        """Return sorted list of queue contents."""
-        fail_list = []
-        while not self.empty():
-            fail_list.append(self.get_nowait())
-        self.count = len(fail_list)
-        return sorted(fail_list, key=get_index_value)
+    def get_all(self) -> list[dict[str, SIMPLE_TYPES]]:
+        """Return sorted list of stream contents."""
+        stream_contents = []
+        while True:
+            try:
+                stream_contents.append(self.receive_stream.receive_nowait())
+            except anyio.WouldBlock:
+                break
+        return sorted(stream_contents, key=get_index_value)
 
 
-class FailureQueue(asyncio.Queue):
-    """A queue to track failures."""
+class ResultStream(FailureStream):
+    """Stream for results."""
 
-    def __init__(
-        self,
-        in_process: dict[str, Any],
-        timer: MillisecondTimer,
-        /,
-        maxsize: int = 0,
-    ) -> None:
-        """Init stats for queue."""
-        super().__init__(maxsize)
-        self.inflight = in_process
-        self.count = 0
-        self.timer = timer
-        self._lock = anyio.Lock()
-
-    async def put(
-        self,
-        args,
-        /,
-        worker_name: str | None = None,
-        worker_count: int | None = None,
-    ):
-        """Put on results queue and update stats."""
-        worker_name = cast(str, worker_name)
-        worker_count = cast(int, worker_count)
-        async with self._lock:
-            del self.inflight[worker_name][worker_count]
-        await super().put(args)
-
-    def get_results(self) -> list[dict[str, SIMPLE_TYPES]]:
-        """Return sorted list of queue contents."""
-        fail_list = []
-        while not self.empty():
-            fail_list.append(self.get_nowait())
-        self.count = len(fail_list)
-        return sorted(fail_list, key=get_index_value)
+    launch_stats_out = ["launch_ms"]
 
 
 class MultiDispatcher:
-    """Runs multiple downloaders using aynchio queues."""
+    """Runs multiple single-site dispatchers sharing streams."""
 
     def __init__(
         self,
@@ -203,35 +173,41 @@ class MultiDispatcher:
 
     async def run(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Run the multidispatcher queue."""
-        arg_q = ArgumentQueue(arg_list, self.inflight, self.timer)
-        result_q = ResultsQueue(self.inflight, self.timer)
-        failed_q = FailureQueue(self.inflight, self.timer)
+        arg_q = ArgumentStream(arg_list, self.inflight, self.timer)
+        result_stream = ResultStream(self.inflight)
+        failure_stream = FailureStream(self.inflight)
+
         async with anyio.create_task_group() as tg:
             for worker in self.workers:
-                tg.start_soon(self.dispatcher, worker, arg_q, result_q, failed_q)
+                tg.start_soon(
+                    self.dispatcher, worker, arg_q, result_stream, failure_stream
+                )
 
         # Process results into pandas data frame in input order.
-        results = result_q.get_results()
-        fails = failed_q.get_results()
+        results = result_stream.get_all()
+        fails = failure_stream.get_all()
         stats = {
-            "jobs_in": len(arg_list),
-            "finished": result_q.count,
-            "failed": failed_q.count,
+            "requests": len(arg_list),
+            "downloaded": len(results),
+            "failed": len(fails),
             "workers": len(self.workers),
         }
         return results, fails, stats
 
-    async def dispatcher(
+    async def dispatcher(  # noqa: C901
         self,
         worker,
-        arg_q: ArgumentQueue,
-        result_q: ResultsQueue,
-        failed_q: FailureQueue,
+        arg_q: ArgumentStream,
+        result_q: ResultStream,
+        failure_q: FailureStream,
     ):
         """Dispatch tasks to worker functions and handle exceptions."""
-        while not arg_q.empty():
-            # Get a set of arguments from the queue.
-            kwargs, worker_count = await arg_q.get(worker_name=worker.name)
+        while True:
+            try:
+                # Get a set of arguments from the queue.
+                kwargs, worker_count = await arg_q.get(worker_name=worker.name)
+            except anyio.WouldBlock:
+                return
             # Do rate limiting, if a limiter is found in worker.
             try:
                 await worker.limiter()
@@ -253,7 +229,7 @@ class MultiDispatcher:
                     n_exceptions = self.exception_counter[idx]
                 if self.max_retries > 0 and n_exceptions >= self.max_retries:
                     await worker.hard_exception_handler(
-                        idx, worker.name, worker_count, e, failed_q
+                        idx, worker.name, worker_count, e, failure_q
                     )
                 else:
                     await worker.soft_exception_handler(
@@ -262,14 +238,12 @@ class MultiDispatcher:
             except worker.hard_exceptions as e:
                 idx = kwargs[INDEX_KEY]
                 await worker.hard_exception_handler(
-                    idx, worker.name, worker_count, e, failed_q
+                    idx, worker.name, worker_count, e, failure_q
                 )
             except Exception as e:
-                # unhandled errors are fatal
+                # unhandled errors go to unhandled exception handler
                 idx = kwargs[INDEX_KEY]
-                await worker.fatal_exception_handler(idx, e)
-            # Notify the queue that the item has been processed.
-            arg_q.task_done()
+                await worker.unhandled_exception_handler(idx, e)
 
     def main(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
         """Start the multidispatcher queue."""
@@ -300,7 +274,7 @@ class QueueWorker:
 
     async def queue_results(
         self,
-        result_q: ResultsQueue,
+        result_q: ResultStream,
         worker_count: int,
         idx: int,
         work_qty: float | int,
@@ -322,7 +296,7 @@ class QueueWorker:
         worker_name: str,
         worker_count: int,
         error: Exception,
-        failed_q: FailureQueue,
+        failure_q: FailureStream,
     ):
         """Handle exceptions that re-queue arguments as failed."""
         if error.__class__ in self.soft_exceptions:
@@ -339,12 +313,12 @@ class QueueWorker:
             "error": error_name,
             "message": message,
         }
-        await failed_q.put(
+        await failure_q.put(
             failure_entry, worker_name=worker_name, worker_count=worker_count
         )
 
-    async def fatal_exception_handler(self, index: int, error: Exception):
-        """Handle fatal exceptions."""
+    async def unhandled__exception_handler(self, index: int, error: Exception):
+        """Handle unhandled exceptions."""
         self._logger.error(error)
         await self._logger.complete()
         sys.exit(1)
@@ -355,7 +329,7 @@ class QueueWorker:
         worker_name: str,
         worker_count: int,
         error: Exception,
-        arg_q: ArgumentQueue,
+        arg_q: ArgumentStream,
     ):
         """Handle exceptions that re-try arguments."""
         if not self.quiet:
