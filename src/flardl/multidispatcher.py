@@ -317,7 +317,7 @@ class QueueWorker:
             failure_entry, worker_name=worker_name, worker_count=worker_count
         )
 
-    async def unhandled__exception_handler(self, index: int, error: Exception):
+    async def unhandled_exception_handler(self, index: int, error: Exception):
         """Handle unhandled exceptions."""
         self._logger.error(error)
         await self._logger.complete()
