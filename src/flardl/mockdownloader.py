@@ -49,7 +49,7 @@ class MockDownloader(QueueWorker):
         self.work_qty_name = "bytes"
         self.launch_rate = self.LAUNCH_RATE_MAX / (ident_no + 1.0)
         self.retirement_rate = self.launch_rate / self.LAUNCH_RETIREMENT_RATIO
-        self.output_path = Path("./tmp")
+        self.output_path = anyio.Path("./tmp")
         self.write_file = write_file
         self._lock = anyio.Lock()
 
@@ -66,8 +66,6 @@ class MockDownloader(QueueWorker):
         file_type: str | None = None,
     ):
         """Do a work unit."""
-        filename = str(code) + "." + str(file_type)
-        filepath = self.output_path / filename
         if idx in self.SOFT_FAILS:
             async with self._lock:
                 self.n_soft_fails += 1
@@ -85,7 +83,11 @@ class MockDownloader(QueueWorker):
             minimum=self.ZIPF_MIN, scale=self.ZIPF_SCALE, exponent=self.ZIPF_EXPONENT
         )
         if self.write_file:
-            async with await anyio.open_file(filepath, mode="w") as f:
+            filename = str(code) + "." + str(file_type)
+            await self.output_path.mkdir(parents=True, exist_ok=True)
+            async with await anyio.open_file(
+                self.output_path / filename, mode="w"
+            ) as f:
                 await f.write("a" * dl_bytes)
         # simulate download time with a sleep
         latency = rng.get_wait_time(self.retirement_rate)
