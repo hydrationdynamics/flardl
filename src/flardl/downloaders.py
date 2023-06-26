@@ -8,7 +8,7 @@ import anyio
 import loguru
 
 # module imports
-from . import random_value_generator as rng
+from .common import RandomValueGenerator
 from .multidispatcher import QueueWorker
 from .multidispatcher import ResultStream
 
@@ -24,9 +24,6 @@ class MockDownloader(QueueWorker):
     )
     LAUNCH_RETIREMENT_RATIO = 1.0
     LAUNCH_RATE_MAX = 100.0
-    ZIPF_EXPONENT = 1.6  # this blows up as it gets closer to 1
-    ZIPF_SCALE = 1000
-    ZIPF_MIN = 1024
     DL_RATE = 10000  # chunks/sec
     DL_CHUNK_SIZE = 1500  # bytes per chunk (packet)
     TIME_ROUND = 4
@@ -52,10 +49,13 @@ class MockDownloader(QueueWorker):
         self.output_path = anyio.Path("./tmp")
         self.write_file = write_file
         self._lock = anyio.Lock()
+        self._limiter_delay = RandomValueGenerator().get_wait_time
+        self._simulated_bytes = RandomValueGenerator().zipf_with_min
+        self._simulated_dl_time = RandomValueGenerator().get_wait_time
 
     async def limiter(self):
         """Fake rate-limiting via sleep for a time dependent on worker."""
-        await anyio.sleep(rng.get_wait_time(self.launch_rate))
+        await anyio.sleep(self._limiter_delay(self.launch_rate))
 
     async def worker(
         self,
@@ -79,9 +79,7 @@ class MockDownloader(QueueWorker):
         elif not self.quiet:
             self._logger.info(f"{self.name} working on job {idx}...")
         # write fake output
-        dl_bytes = rng.zipf_with_min(
-            minimum=self.ZIPF_MIN, scale=self.ZIPF_SCALE, exponent=self.ZIPF_EXPONENT
-        )
+        dl_bytes = self._simulated_bytes()
         if self.write_file:
             filename = str(code) + "." + str(file_type)
             await self.output_path.mkdir(parents=True, exist_ok=True)
@@ -90,7 +88,7 @@ class MockDownloader(QueueWorker):
             ) as f:
                 await f.write("a" * dl_bytes)
         # simulate download time with a sleep
-        latency = rng.get_wait_time(self.retirement_rate)
+        latency = self._simulated_dl_time(self.retirement_rate)
         receive_time = int(dl_bytes / self.DL_CHUNK_SIZE) / self.DL_RATE
         dl_time = round(latency + receive_time, self.TIME_ROUND)
         await anyio.sleep(dl_time)

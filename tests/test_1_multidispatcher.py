@@ -14,64 +14,12 @@ import loguru
 import pandas as pd
 
 from flardl import INDEX_KEY
-from flardl import SIMPLE_TYPES
-from flardl.mockdownloader import MockDownloader
+from flardl.downloaders import MockDownloader
 from flardl.multidispatcher import MultiDispatcher
 
 from . import print_docstring
-
-
-NO_LEVEL_BELOW = 100
-
-
-class NonStringIterable(metaclass=abc.ABCMeta):
-    """A class to find iterables that are not strings."""
-
-    __slots__ = ()
-
-    @abc.abstractmethod
-    def __iter__(self):
-        """Fake iteration."""
-        while False:
-            yield None
-
-    @classmethod
-    def __subclasshook__(cls, c):
-        """Check if non-string iterable."""
-        if cls is NonStringIterable:
-            if issubclass(c, str):
-                return False
-
-            return cabc._check_methods(c, "__iter__")
-        return NotImplemented
-
-
-def zip_arg_dict(
-    arg_dict: dict[str, NonStringIterable | SIMPLE_TYPES]
-) -> list[dict[str, SIMPLE_TYPES]]:
-    """Zip on the longest non-string iterables, adding an index."""
-    ret_list = []
-    iterable_args = [k for k in arg_dict if isinstance(arg_dict[k], NonStringIterable)]
-    idx = 0
-    for iter_tuple in zip_longest(
-        *[cast(Iterable, arg_dict[k]) for k in iterable_args]
-    ):
-        args: dict[str, SIMPLE_TYPES] = {INDEX_KEY: idx}
-        for key in arg_dict.keys():
-            if key in iterable_args:
-                args[key] = iter_tuple[iterable_args.index(key)]
-            else:
-                args[key] = cast(SIMPLE_TYPES, arg_dict[key])
-        idx += 1
-        ret_list.append(args)
-    return ret_list
-
-
-def _stderr_format_func(record: loguru.Record) -> str:
-    """Do level-sensitive formatting."""
-    if record["level"].no < NO_LEVEL_BELOW:
-        return "<level>{message}</level>\n"
-    return "<level>{level}</level>: <level>{message}</level>\n"
+from . import stderr_format_func
+from . import zip_arg_dict
 
 
 @print_docstring()
@@ -88,7 +36,7 @@ def test_multidispatcher():
     arg_list = zip_arg_dict(arg_dict)
     logger = loguru.logger
     logger.remove()
-    logger.add(sys.stderr, format=_stderr_format_func)
+    logger.add(sys.stderr, format=stderr_format_func)
     runner = MultiDispatcher(
         [
             MockDownloader(i, logger, quiet=quiet, write_file=True)
@@ -97,7 +45,7 @@ def test_multidispatcher():
         max_retries=max_retries,
         quiet=quiet,
     )
-    result_list, fail_list, global_stats = runner.main(arg_list)
+    result_list, fail_list, global_stats = runner.main(arg_list, config="testing")
     results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
     print(f"\nResults:\n{results}")
     results.to_csv("results.tsv", sep="\t")

@@ -1,8 +1,8 @@
 """Work is dispatched to multiple workers and results collected via asynchio queues."""
 from __future__ import annotations
 
+import asyncio
 import math
-import random
 import sys
 from collections import Counter
 from itertools import takewhile
@@ -15,16 +15,17 @@ import anyio
 import loguru
 from loguru import logger as mylogger
 
-from . import DEFAULT_MAX_RETRIES
-from . import INDEX_KEY
-from . import RANDOM_SEED
-from . import RATE_ROUNDING
-from . import TIME_EPSILON
-from . import MillisecondTimer
+from .common import DEFAULT_MAX_RETRIES
+from .common import INDEX_KEY
+from .common import RANDOM_SEED
+from .common import RATE_ROUNDING
+from .common import TIME_EPSILON
+from .common import MillisecondTimer
 from .queue_stats import QueueStats
 
 
 SIMPLE_TYPES = Union[int, float, str, None]
+LAUNCH_KEY = "launch_t"
 
 
 def get_index_value(item: dict[str, SIMPLE_TYPES]) -> int:
@@ -85,7 +86,7 @@ class ArgumentStream:
             self.inflight[worker_name][worker_count] = {
                 INDEX_KEY: idx,
                 "queue_depth": len(self.inflight[worker_name]),
-                "launch_ms": launch_time,
+                LAUNCH_KEY: launch_time,
                 "cum_launch_rate": self.launch_rate,
             }
         return q_entry, worker_count
@@ -140,7 +141,7 @@ class FailureStream:
 class ResultStream(FailureStream):
     """Stream for results."""
 
-    launch_stats_out = ["launch_ms"]
+    launch_stats_out = [LAUNCH_KEY]
 
 
 class MultiDispatcher:
@@ -245,15 +246,23 @@ class MultiDispatcher:
                 idx = kwargs[INDEX_KEY]
                 await worker.unhandled_exception_handler(idx, e)
 
-    def main(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
+    def main(self, arg_list: list[dict[str, SIMPLE_TYPES]], config: str = "production"):
         """Start the multidispatcher queue."""
-        random.seed(RANDOM_SEED)
-        if sys.platform == "win32":
-            backend_options = {}
+        backend_options = {}
+        if config == "production":
+            backend = "asyncio"
+            if sys.platform != "win32":
+                backend_options = {"use_uvloop": True}
+        elif config == "testing":
+            backend = "asyncio"
+            # asyncio.set_event_loop_policy(DeterministicEventLoopPolicy())
+        elif config == "trio":
+            backend = "trio"
         else:
-            backend_options = {"use_uvloop": True}
+            self._logger.error(f"Unknown configuration {config}")
+            sys.exit(1)
         return anyio.run(
-            self.run, arg_list, backend="asyncio", backend_options=backend_options
+            self.run, arg_list, backend=backend, backend_options=backend_options
         )
 
 
