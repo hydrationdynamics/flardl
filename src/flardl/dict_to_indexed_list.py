@@ -3,6 +3,7 @@
 import abc
 from collections.abc import Iterable
 from itertools import zip_longest
+from typing import Union
 from typing import cast
 
 import _collections_abc as cabc
@@ -34,7 +35,7 @@ class NonStringIterable(metaclass=abc.ABCMeta):
 
 
 def zip_dict_to_indexed_list(
-    arg_dict: dict[str, NonStringIterable | SIMPLE_TYPES]
+    arg_dict: dict[str, Union[NonStringIterable, SIMPLE_TYPES]]
 ) -> list[dict[str, SIMPLE_TYPES]]:
     """Zip on the longest non-string iterables, adding an index."""
     ret_list = []
