@@ -1,8 +1,6 @@
 """Mock downloads using sleeps."""
 from __future__ import annotations
 
-from pathlib import Path
-
 # third-party imports
 import anyio
 import loguru

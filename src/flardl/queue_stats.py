@@ -16,14 +16,10 @@ from .common import BYTES_TO_MEGABITS
 from .common import DEFAULT_ROUNDING
 from .common import HIST
 from .common import MAX
-from .common import MIN
-from .common import NOBS
 from .common import NUMERIC_TYPE
 from .common import RAVG
 from .common import STAT_SUBLABELS
 from .common import SUM
-from .common import TIME_EPSILON
-from .common import TIME_ROUNDING
 from .common import VALUE
 
 
@@ -249,7 +245,7 @@ class QueueStats(UserDict):
                 if not isinstance(v, WorkerStat):
                     self[k].set(v, worker=worker)
                     pop_list.append(k)
-            [input_dict.pop(k) for k in pop_list]
+            [input_dict.pop(k) for k in pop_list]  # noqa: W0106
             super().update(input_dict)
         else:
             super().update(*args)

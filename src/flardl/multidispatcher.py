@@ -1,11 +1,9 @@
 """Work is dispatched to multiple workers and results collected via asynchio queues."""
 from __future__ import annotations
 
-import asyncio
 import math
 import sys
 from collections import Counter
-from itertools import takewhile
 from typing import Any
 from typing import Union
 from typing import cast
