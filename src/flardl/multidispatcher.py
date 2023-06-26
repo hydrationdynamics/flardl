@@ -17,7 +17,6 @@ from loguru import logger as mylogger
 
 from .common import DEFAULT_MAX_RETRIES
 from .common import INDEX_KEY
-from .common import RANDOM_SEED
 from .common import RATE_ROUNDING
 from .common import TIME_EPSILON
 from .common import MillisecondTimer

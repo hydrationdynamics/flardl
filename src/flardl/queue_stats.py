@@ -12,7 +12,6 @@ from attrs import define
 from attrs import field
 
 from .common import ALL
-from .common import AVG
 from .common import BYTES_TO_MEGABITS
 from .common import DEFAULT_ROUNDING
 from .common import HIST
@@ -20,7 +19,6 @@ from .common import MAX
 from .common import MIN
 from .common import NOBS
 from .common import NUMERIC_TYPE
-from .common import RATE_ROUNDING
 from .common import RAVG
 from .common import STAT_SUBLABELS
 from .common import SUM

@@ -10,8 +10,8 @@ from flardl import NOBS
 from flardl import RAVG
 from flardl import SUM
 from flardl import VALUE
-from flardl.queue_stats import QueueStats
-from flardl.queue_stats import WorkerStat
+from flardl import QueueStats
+from flardl import WorkerStat
 
 # module imports
 from . import print_docstring

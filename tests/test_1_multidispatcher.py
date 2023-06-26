@@ -14,12 +14,12 @@ import loguru
 import pandas as pd
 
 from flardl import INDEX_KEY
-from flardl.downloaders import MockDownloader
-from flardl.multidispatcher import MultiDispatcher
+from flardl import MockDownloader
+from flardl import MultiDispatcher
+from flardl import zip_dict_to_indexed_list
 
 from . import print_docstring
 from . import stderr_format_func
-from . import zip_arg_dict
 
 
 @print_docstring()
@@ -33,7 +33,7 @@ def test_multidispatcher():
         "code": [f"{i:04}" for i in range(n_items)],
         "file_type": "txt",
     }
-    arg_list = zip_arg_dict(arg_dict)
+    arg_list = zip_dict_to_indexed_list(arg_dict)
     logger = loguru.logger
     logger.remove()
     logger.add(sys.stderr, format=stderr_format_func)
