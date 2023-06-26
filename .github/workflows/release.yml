@@ -55,7 +55,7 @@ jobs:
           poetry build --ansi
 
       - name: Publish package on PyPI
-        if: steps.check-version.outputs.tag 
+        if: steps.check-version.outputs.tag
         uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Publish package on TestPyPI
