@@ -50,8 +50,8 @@ class ArgumentStream:
         self,
         args,
         /,
-        worker_name: str | None = None,
-        worker_count: int | None = None,
+        worker_name: Union[str, None] = None,
+        worker_count: Union[int, None] = None,
     ):
         """Put on results queue and update stats."""
         worker_name = cast(str, worker_name)
@@ -60,7 +60,7 @@ class ArgumentStream:
             del self.inflight[worker_name][worker_count]
         await self.send_stream.send(args)
 
-    async def get(self, /, worker_name: str | None = None, **kwargs):
+    async def get(self, /, worker_name: Union[str, None] = None, **kwargs):
         """Track de-queuing by worker."""
         worker_name = cast(str, worker_name)
         q_entry = self.receive_stream.receive_nowait(**kwargs)
@@ -104,8 +104,8 @@ class FailureStream:
         self,
         args,
         /,
-        worker_name: str | None = None,
-        worker_count: int | None = None,
+        worker_name: Union[str, None] = None,
+        worker_count: Union[int, None] = None,
     ):
         """Put on results queue and update stats."""
         worker_name = cast(str, worker_name)

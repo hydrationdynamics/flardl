@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import sys
 from typing import Any
+from typing import Optional
+from typing import Union
 
 # third-party imports
 import anyio
