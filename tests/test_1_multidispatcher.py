@@ -4,13 +4,11 @@ from __future__ import annotations
 import sys
 
 import hypothesis.stateful as hypothesis_stateful
-import hypothesis_trio.stateful
 
 # third-party imports
 import loguru
 import pandas as pd
 import pytest
-import trio
 from hypothesis import given
 from hypothesis import register_random
 from hypothesis import seed
@@ -26,16 +24,13 @@ from . import print_docstring
 from . import stderr_format_func
 
 
-# register_random(trio._core._run._r)
-# trio._core._run._ALLOW_DETERMINISTIC_SCHEDULING = True
-print(f"deterministic scheduling={trio._core._run._ALLOW_DETERMINISTIC_SCHEDULING}")
+ANYIO_BACKEND = "asyncio"
 
 
 @pytest.fixture
 def anyio_backend():
     """Select backend for testing."""
-    # return "trio"
-    return "asyncio"
+    return ANYIO_BACKEND
 
 
 @pytest.mark.anyio
