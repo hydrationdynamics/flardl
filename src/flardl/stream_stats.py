@@ -1,4 +1,4 @@
-"""Simple queue-associated statistical functions."""
+"""Simple stream-associated statistical functions."""
 from collections import UserDict
 from collections import deque
 from typing import Any
@@ -27,7 +27,7 @@ from .common import VALUE
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
 
-QueueStatsType = TypeVar("QueueStatsType", bound="QueueStats")
+StreamStatsType = TypeVar("StreamStatsType", bound="StreamStats")
 StatType = TypeVar("StatType", bound="Stat")
 U = TypeVar("U")
 
@@ -168,7 +168,7 @@ class ReportData:
     rounding: Optional[int] = None
 
 
-class QueueStats(UserDict):
+class StreamStats(UserDict):
     """Dictionary of per-worker queue stats with update calculations."""
 
     stat_data = {

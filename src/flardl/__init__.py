@@ -13,5 +13,5 @@ from .common import VALUE  # noqa: F401
 from .dict_to_indexed_list import zip_dict_to_indexed_list  # noqa: F401
 from .downloaders import MockDownloader  # noqa: F401
 from .multidispatcher import MultiDispatcher  # noqa: F401
-from .queue_stats import QueueStats  # noqa: F401
-from .queue_stats import WorkerStat  # noqa: F401
+from .stream_stats import StreamStats  # noqa: F401
+from .stream_stats import WorkerStat  # noqa: F401

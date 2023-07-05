@@ -27,6 +27,7 @@ Thumbs.db
 # generated data
 tests/data
 results.tsv
+.hypothesis/
 
 # temporary working dir
 tmp/

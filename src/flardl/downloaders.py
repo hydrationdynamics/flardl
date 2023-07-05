@@ -7,11 +7,11 @@ import loguru
 
 # module imports
 from .common import RandomValueGenerator
-from .multidispatcher import QueueWorker
-from .multidispatcher import ResultStream
+from .instrumented_streams import ResultStream
+from .multidispatcher import StreamWorker
 
 
-class MockDownloader(QueueWorker):
+class MockDownloader(StreamWorker):
     """Demonstrates multi-dispatch operation with logging."""
 
     SOFT_FAILS = [2, 4]

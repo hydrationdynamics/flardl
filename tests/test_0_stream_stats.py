@@ -1,4 +1,4 @@
-"""Test queue stats functionality."""
+"""Test stream stats functionality."""
 from pytest import raises
 
 from flardl import ALL
@@ -10,7 +10,7 @@ from flardl import NOBS
 from flardl import RAVG
 from flardl import SUM
 from flardl import VALUE
-from flardl import QueueStats
+from flardl import StreamStats
 from flardl import WorkerStat
 
 # module imports
@@ -86,10 +86,10 @@ def test_worker_stat():
 
 
 @print_docstring()
-def test_queue_stats():
-    """Test QueueStats functionality."""
+def test_stream_stats():
+    """Test StreamStats functionality."""
     worker_list = ["worker0", "worker1"]
-    qs = QueueStats(worker_list, history_len=2)
+    qs = StreamStats(worker_list, history_len=2)
     qs.update_stats(
         {"retirement_t": 800.1, "launch_t": 0.1, "bytes": 2 * 1024 * 1024},
         worker="worker0",

@@ -1,17 +1,21 @@
 """Test multidispatcher function with mock downloader."""
 from __future__ import annotations
 
-import abc
 import sys
-from collections.abc import Iterable
-from itertools import zip_longest
-from typing import cast
 
-import _collections_abc as cabc
+import hypothesis.stateful as hypothesis_stateful
+import hypothesis_trio.stateful
 
 # third-party imports
 import loguru
 import pandas as pd
+import pytest
+import trio
+from hypothesis import given
+from hypothesis import register_random
+from hypothesis import seed
+from hypothesis import settings
+from hypothesis import strategies as st
 
 from flardl import INDEX_KEY
 from flardl import MockDownloader
@@ -22,8 +26,22 @@ from . import print_docstring
 from . import stderr_format_func
 
 
-@print_docstring()
-def test_multidispatcher():
+# register_random(trio._core._run._r)
+# trio._core._run._ALLOW_DETERMINISTIC_SCHEDULING = True
+print(f"deterministic scheduling={trio._core._run._ALLOW_DETERMINISTIC_SCHEDULING}")
+
+
+@pytest.fixture
+def anyio_backend():
+    """Select backend for testing."""
+    # return "trio"
+    return "asyncio"
+
+
+@pytest.mark.anyio
+@settings(deadline=10000.0, derandomize=True)
+@given(x=st.just(1))
+async def test_anyio_multidispatcher(x) -> None:
     """Test multidispatcher."""
     n_items = 100
     n_consumers = 3
@@ -45,7 +63,7 @@ def test_multidispatcher():
         max_retries=max_retries,
         quiet=quiet,
     )
-    result_list, fail_list, global_stats = runner.main(arg_list, config="testing")
+    result_list, fail_list, global_stats = await runner.run(arg_list)
     results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
     print(f"\nResults:\n{results}")
     results.to_csv("results.tsv", sep="\t")
