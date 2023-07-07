@@ -23,7 +23,7 @@ from .common import SUM
 from .common import VALUE
 
 
-# type defs
+# type definitions
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
 
@@ -48,6 +48,7 @@ def _round(val: NUMERIC_TYPE, rounding: int) -> NUMERIC_TYPE:
 
 def _set_stat(instance: StatType, attrib: Attribute, val: NUMERIC_TYPE) -> NUMERIC_TYPE:
     """Round stat value and set derived quantities."""
+    _unused = (attrib,)  # noqa: F841
     rounded_val = _round(val, instance._rounding)
     instance.n_obs += 1
     if instance.value is None:

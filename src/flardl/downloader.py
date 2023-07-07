@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import sys
 from typing import Any
-from typing import Optional
-from typing import Union
 
 # third-party imports
 import anyio
@@ -24,7 +22,7 @@ class StreamWorker:
     """Basic worker functions."""
 
     def __init__(
-        self, name: str, logger: loguru.Logger | None = None, quiet: bool = False
+        self, /, name: str, logger: loguru.Logger | None = None, quiet: bool = False
     ):
         """Init data structures."""
         if logger is None:
@@ -122,12 +120,14 @@ class MockDownloader(StreamWorker):
     def __init__(
         self,
         ident_no: int,
+        /,
+        name: str = "",
         logger: loguru.Logger | None = None,
         quiet: bool = False,
         write_file: bool = False,
     ):
         """Init with id number."""
-        super().__init__(f"W{ident_no}", logger=logger, quiet=quiet)
+        super().__init__(name=name, logger=logger, quiet=quiet)
         self.quiet = quiet
         self.ident = ident_no
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
@@ -171,8 +171,8 @@ class MockDownloader(StreamWorker):
             self._logger.info(f"{self.name} working on job {idx}...")
         # write fake output
         dl_bytes = self._simulated_bytes()
+        filename = str(code) + "." + str(file_type)
         if self.write_file:
-            filename = str(code) + "." + str(file_type)
             await self.output_path.mkdir(parents=True, exist_ok=True)
             async with await anyio.open_file(
                 self.output_path / filename, mode="w"

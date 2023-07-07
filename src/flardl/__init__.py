@@ -10,8 +10,6 @@ from .common import NOBS  # noqa: F401
 from .common import RAVG  # noqa: F401
 from .common import SUM  # noqa: F401
 from .common import VALUE  # noqa: F401
-from .dict_to_indexed_list import zip_dict_to_indexed_list  # noqa: F401
-from .downloader import MockDownloader  # noqa: F401
 from .multidispatcher import MultiDispatcher  # noqa: F401
 from .stream_stats import StreamStats  # noqa: F401
 from .stream_stats import WorkerStat  # noqa: F401

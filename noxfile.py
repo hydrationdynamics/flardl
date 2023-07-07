@@ -152,7 +152,6 @@ def mypy(session: Session) -> None:
     args = session.posargs or ["src"]
     session.install(".")
     session.install(
-        "hypothesis",
         "loguru",
         "loguru-mypy",
         "mypy",
@@ -171,7 +170,6 @@ def tests(session: Session) -> None:
     session.install(".")
     session.install(
         "coverage[toml]",
-        "hypothesis",
         "pandas",
         "pandas-stubs",
         "pytest",

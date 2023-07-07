@@ -1,4 +1,4 @@
-"""Flardl--download list of URLs from a list of federated servers."""
+"""Shared constants, parameters, and routines."""
 from time import time
 from typing import Optional
 from typing import Union
@@ -12,13 +12,15 @@ import numpy as np
 ALL = "all"
 AVG = "avg"
 HIST = "history"
+INDEX_KEY = "idx"
 MAX = "max"
 MIN = "min"
 NOBS = "n_obs"
 RAVG = "r_avg"
 SUM = "sum"
 VALUE = "value"
-# pretty labels for substat names
+
+# Pretty labels for substat names.
 STAT_SUBLABELS = {
     VALUE: "",
     SUM: "total ",
@@ -29,8 +31,6 @@ STAT_SUBLABELS = {
     HIST: "history ",
     RAVG: "rolling average ",
 }
-INDEX_KEY = "idx"
-# constants
 DEFAULT_ROUNDING = 2  # digits after decimal
 DEFAULT_MAX_RETRIES = 0
 TIME_ROUNDING = 1  # digits, milliseconds
@@ -41,11 +41,9 @@ RANDOM_SEED = 87507
 DEFAULT_ZIPF_EXPONENT = 1.5  # more divergent as it gets closer to 1
 DEFAULT_ZIPF_SCALE = 1000
 DEFAULT_ZIPF_MIN = 1024
-# type defs
 NUMERIC_TYPE = Union[int, float]
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
-TIME_ROUNDING = 1  # digits, milliseconds
 SIMPLE_TYPES = Union[int, float, bool, str, None]
 
 
@@ -70,7 +68,7 @@ class RandomValueGenerator:
         return self.rng.exponential(1.0 / rate)
 
     def zipf_with_min(self) -> int:
-        """Return a Zipf's law-distributed integer with minimum.
+        """Return a Zipf-law-distributed integer with minimum.
 
         This distribution approximately describes many file-size
         distributions arising from natural language and human-written

@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import sys
+from typing import Any
 from typing import Optional
+from typing import Union
 
 # third-party imports
 import anyio
@@ -13,6 +15,9 @@ from .common import DEFAULT_MAX_RETRIES
 from .common import INDEX_KEY
 from .common import SIMPLE_TYPES
 from .common import MillisecondTimer
+from .dict_to_indexed_list import NonStringIterable
+from .dict_to_indexed_list import zip_dict_to_indexed_list
+from .downloader import MockDownloader
 from .instrumented_streams import ArgumentStream
 from .instrumented_streams import FailureStream
 from .instrumented_streams import ResultStream
@@ -24,31 +29,69 @@ class MultiDispatcher:
 
     def __init__(
         self,
-        worker_list: list,
+        all_worker_defs: list[dict[str, Any]],
         /,
+        worker_list: list[str] | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
         logger: loguru.Logger | None = None,
         quiet: bool = False,
         history_len: int = 0,
+        write_files: bool = False,
     ) -> None:
         """Save list of dispatchers."""
         if logger is None:
             self._logger = mylogger
         else:
             self._logger = logger
-        self.workers = worker_list
+        all_worker_names = [w["name"] for w in all_worker_defs]
+        if worker_list is None:
+            worker_defs = all_worker_defs
+        else:
+            worker_defs = []
+            for worker_name in worker_list:
+                try:
+                    worker_idx = all_worker_names.index(worker_name)
+                except ValueError:
+                    self._logger.error(f"Worker name {worker_name} not found.")
+                    sys.exit(1)
+                worker_defs.append(all_worker_defs[worker_idx])
+        self.workers = []
+        for i, worker_def in enumerate(worker_defs):
+            try:
+                worker = MockDownloader(
+                    i, logger=self._logger, quiet=quiet, **worker_def
+                )
+            except Exception as e:
+                self._logger.warning(
+                    f"Worker {worker_def['name']} failed to initialize."
+                )
+                self._logger.warning(e)
+                continue
+            self.workers.append(worker)
+        if len(self.workers) == 0:
+            self._logger.error("No valid workers found.")
+            sys.exit(1)
         self.max_retries = max_retries
         self.exception_counter: dict[int, int] = {}
         self.n_too_many_retries = 0
         self.n_exceptions = 0
         self.quiet = quiet
-        self.queue_stats = StreamStats(worker_list, history_len=history_len)
+        self.queue_stats = StreamStats(all_worker_names, history_len=history_len)
         self._lock = anyio.Lock()
         self.inflight: dict[str, SIMPLE_TYPES] = {}
         self.timer = MillisecondTimer()
 
-    async def run(self, arg_list: list[dict[str, SIMPLE_TYPES]]):
+    async def run(
+        self,
+        args: (
+            list[dict[str, SIMPLE_TYPES]] | dict[str, NonStringIterable | SIMPLE_TYPES]
+        ),
+    ):
         """Run the multidispatcher queue."""
+        if isinstance(args, list):
+            arg_list = args
+        elif isinstance(args, dict):
+            arg_list = zip_dict_to_indexed_list(args)
         arg_q = ArgumentStream(arg_list, self.inflight, self.timer)
         result_stream = ResultStream(self.inflight)
         failure_stream = FailureStream(self.inflight)
