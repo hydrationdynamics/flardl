@@ -1,5 +1,4 @@
 """Test multidispatcher function with mock downloader."""
-from __future__ import annotations
 
 import sys
 
@@ -11,6 +10,7 @@ import pytest
 from flardl import INDEX_KEY
 from flardl import MultiDispatcher
 
+from . import SERVER_DEFS
 from . import stderr_format_func
 
 
@@ -27,30 +27,36 @@ def anyio_backend():
 async def test_anyio_multidispatcher() -> None:
     """Test multidispatcher."""
     n_items = 100
-    n_consumers = 3
     max_retries = 2
     quiet = True
-    worker_defs = [{"name": f"W{i}"} for i in range(n_consumers)]
+    server_list = ["aws", "us", "uk"]
     logger = loguru.logger
     logger.remove()
     logger.add(sys.stderr, format=stderr_format_func)
-    logger.info("1")
     runner = MultiDispatcher(
-        worker_defs,
+        SERVER_DEFS,
+        worker_list=server_list,
         logger=logger,
         max_retries=max_retries,
         quiet=quiet,
-        write_files=True,
+        output_dir="./tmp",
+        mock=True,
     )
-    logger.info("2")
     arg_dict = {
         "code": [f"{i:04}" for i in range(n_items)],
         "file_type": "txt",
     }
     result_list, fail_list, global_stats = await runner.run(arg_dict)
-    results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
-    print(f"\nResults:\n{results}")
-    results.to_csv("results.tsv", sep="\t")
-    failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
-    print(f"\nFailures:\n{failures}")
+    if len(result_list):
+        results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
+        print(f"\nResults:\n{results}")
+        results.to_csv("results.tsv", sep="\t")
+    else:
+        logger.error("No results!")
+    if len(fail_list):
+        failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
+        print(f"\nFailures:\n{failures}")
+        failures.to_csv("failures.tsv", sep="\t")
+    else:
+        logger.info("No failures.")
     print(f"\nGlobal Stats:\n{global_stats}")

@@ -1,13 +1,14 @@
 """Downloads as a MultiDispatcher worker class."""
 from __future__ import annotations
 
+import pathlib
 import sys
 from typing import Any
 
 # third-party imports
 import anyio
+import httpx
 import loguru
-from loguru import logger as mylogger
 
 # module imports
 from .common import INDEX_KEY
@@ -22,31 +23,65 @@ class StreamWorker:
     """Basic worker functions."""
 
     def __init__(
-        self, /, name: str, logger: loguru.Logger | None = None, quiet: bool = False
+        self,
+        worker_no: int,
+        logger: loguru.Logger,
+        output_dir: str | None,
+        quiet: bool,
+        /,
+        name: str,
+        bw_limit_mbps: float = 0.0,
+        queue_depth: int = 0,
+        timeout_factor: float = 0.0,
+        **kwargs,
     ):
-        """Init data structures."""
-        if logger is None:
-            self._logger = mylogger
-        else:
-            self._logger = logger
+        """Positional=common across workers, keyworded=individual."""
+        self.worker_no = worker_no
+        self.output_dir = output_dir
+        self._logger = logger
+        self.output_dir = output_dir
+        if output_dir is not None:
+            pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+        self.quiet = quiet
+        # keyworded parameters
         self.name = name
+
+        self.bw_limit = bw_limit_mbps
+        self.queue_depth = queue_depth
+        self.timeout_factor = timeout_factor
+        # initialize internal parameters
+        self.work_qty_name = "bytes"
         self.n_soft_fails = 0
         self.n_hard_fails = 0
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = ()
         self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = ()
-        self.work_qty_name = "bytes"
-        self.quiet = quiet
+        self._lock = anyio.Lock()
+        self._limiter_delay = RandomValueGenerator().get_wait_time
 
-    async def queue_results(
+    async def limiter(self):
+        """Fake rate-limiting via sleep."""
+        await anyio.sleep(self._limiter_delay(self.launch_rate))
+
+    async def add_result(
         self,
-        result_q: ResultStream,
-        worker_count: int,
+        data: bytes | str,
+        filename: str,
         idx: int,
-        work_qty: float | int,
+        worker_count: int,
+        result_q: ResultStream,
         /,
-        **kwargs: SIMPLE_TYPES,
+        **kwargs: dict[str, SIMPLE_TYPES],
     ):
         """Put dictionary of results on ouput queue."""
+        work_qty = len(data)
+        if self.output_dir is not None:
+            out_file_str = self.output_dir + "/" + filename
+            if isinstance(data, str):
+                async with await anyio.open_file(out_file_str, "w") as fp:
+                    await fp.write(data)
+            else:
+                out_file_path = anyio.Path(out_file_str)
+                await out_file_path.write_bytes(data)
         results = {
             INDEX_KEY: idx,
             "worker": self.name,
@@ -117,41 +152,23 @@ class MockDownloader(StreamWorker):
     DL_CHUNK_SIZE = 1500  # bytes per chunk (packet)
     TIME_ROUND = 4
 
-    def __init__(
-        self,
-        ident_no: int,
-        /,
-        name: str = "",
-        logger: loguru.Logger | None = None,
-        quiet: bool = False,
-        write_file: bool = False,
-    ):
+    def __init__(self, *args, **kwargs):
         """Init with id number."""
-        super().__init__(name=name, logger=logger, quiet=quiet)
-        self.quiet = quiet
-        self.ident = ident_no
+        super().__init__(*args, **kwargs)
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
         self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (
             ConnectionError,
         )
-        self.work_qty_name = "bytes"
-        self.launch_rate = self.LAUNCH_RATE_MAX / (ident_no + 1.0)
+        self.launch_rate = self.LAUNCH_RATE_MAX / (self.worker_no + 1.0)
         self.retirement_rate = self.launch_rate / self.LAUNCH_RETIREMENT_RATIO
-        self.output_path = anyio.Path("./tmp")
-        self.write_file = write_file
-        self._lock = anyio.Lock()
-        self._limiter_delay = RandomValueGenerator().get_wait_time
         self._simulated_bytes = RandomValueGenerator().zipf_with_min
         self._simulated_dl_time = RandomValueGenerator().get_wait_time
-
-    async def limiter(self):
-        """Fake rate-limiting via sleep for a time dependent on worker."""
-        await anyio.sleep(self._limiter_delay(self.launch_rate))
 
     async def worker(
         self,
         result_q: ResultStream,
         worker_count: int,
+        /,
         idx: int,
         code: str | None = None,
         file_type: str | None = None,
@@ -169,20 +186,64 @@ class MockDownloader(StreamWorker):
             raise ValueError(f"Job {idx} failed on {self.name} (expected).")
         elif not self.quiet:
             self._logger.info(f"{self.name} working on job {idx}...")
-        # write fake output
-        dl_bytes = self._simulated_bytes()
+        # create simulated output
+        n_dl_bytes = self._simulated_bytes()
+        dl_data = "a" * n_dl_bytes
         filename = str(code) + "." + str(file_type)
-        if self.write_file:
-            await self.output_path.mkdir(parents=True, exist_ok=True)
-            async with await anyio.open_file(
-                self.output_path / filename, mode="w"
-            ) as f:
-                await f.write("a" * dl_bytes)
         # simulate download time with a sleep
         latency = self._simulated_dl_time(self.retirement_rate)
-        receive_time = int(dl_bytes / self.DL_CHUNK_SIZE) / self.DL_RATE
+        receive_time = int(n_dl_bytes / self.DL_CHUNK_SIZE) / self.DL_RATE
         dl_time = round(latency + receive_time, self.TIME_ROUND)
         await anyio.sleep(dl_time)
-        await self.queue_results(
-            result_q, worker_count, idx, dl_bytes, filename=filename
+        out_filename = filename
+        await self.add_result(dl_data, out_filename, idx, worker_count, result_q)
+
+
+class Downloader(StreamWorker):
+    """Demonstrates multi-dispatch operation with logging."""
+
+    LAUNCH_RATE_MAX = 100.0
+    TIME_ROUND = 4
+
+    def __init__(
+        self,
+        *args,
+        server: str = "",
+        dir: str = "",
+        transport: str = "https",
+        transport_ver: str = "1",
+        **kwargs,
+    ):
+        """Init with id number."""
+        super().__init__(*args, **kwargs)
+        self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
+        self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (
+            ConnectionError,
         )
+        self.launch_rate = self.LAUNCH_RATE_MAX
+        self.base_url = transport + "://" + server + "/"
+        if dir != "":
+            self.base_url += dir + "/"
+        if transport_ver == "2":
+            self.http2 = True
+        else:
+            self.http2 = False
+        self.client = httpx.AsyncClient(base_url=self.base_url, http2=self.http2)
+
+    async def worker(
+        self,
+        result_q: ResultStream,
+        worker_count: int,
+        /,
+        idx: int,
+        path: str,
+        out_filename: str,
+    ):
+        """Download a file."""
+        if not self.quiet:
+            self._logger.info(
+                f"Downloading {self.base_url}{path} to file {out_filename}"
+            )
+        response = await self.client.get(path)
+        dl_data = response.content
+        await self.add_result(dl_data, out_filename, idx, worker_count, result_q)

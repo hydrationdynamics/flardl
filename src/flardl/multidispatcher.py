@@ -4,7 +4,6 @@ from __future__ import annotations
 import sys
 from typing import Any
 from typing import Optional
-from typing import Union
 
 # third-party imports
 import anyio
@@ -17,6 +16,7 @@ from .common import SIMPLE_TYPES
 from .common import MillisecondTimer
 from .dict_to_indexed_list import NonStringIterable
 from .dict_to_indexed_list import zip_dict_to_indexed_list
+from .downloader import Downloader
 from .downloader import MockDownloader
 from .instrumented_streams import ArgumentStream
 from .instrumented_streams import FailureStream
@@ -27,7 +27,7 @@ from .stream_stats import StreamStats
 class MultiDispatcher:
     """Runs multiple single-site dispatchers sharing streams."""
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         all_worker_defs: list[dict[str, Any]],
         /,
@@ -36,7 +36,8 @@ class MultiDispatcher:
         logger: loguru.Logger | None = None,
         quiet: bool = False,
         history_len: int = 0,
-        write_files: bool = False,
+        output_dir: str | None = None,
+        mock: bool = False,
     ) -> None:
         """Save list of dispatchers."""
         if logger is None:
@@ -56,10 +57,14 @@ class MultiDispatcher:
                     sys.exit(1)
                 worker_defs.append(all_worker_defs[worker_idx])
         self.workers = []
+        if mock:
+            worker_factory = MockDownloader
+        else:
+            worker_factory = Downloader
         for i, worker_def in enumerate(worker_defs):
             try:
-                worker = MockDownloader(
-                    i, logger=self._logger, quiet=quiet, **worker_def
+                worker = worker_factory(
+                    i, self._logger, output_dir, quiet, **worker_def
                 )
             except Exception as e:
                 self._logger.warning(

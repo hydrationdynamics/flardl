@@ -6,14 +6,63 @@ import functools
 import os
 from pathlib import Path
 from typing import Callable
-from typing import Union
 
 import loguru
 
-from flardl import INDEX_KEY
-
 
 NO_LEVEL_BELOW = 100
+SERVER_DEFS = [
+    {
+        "name": "aws",
+        "server": "s3.rcsb.org",
+        "dir": "pub/pdb/data",
+        "transport": "https",
+        "transport_ver": "1",
+        "bw_limit_mbps": 0.0,
+        "queue_depth": 0,
+        "timeout_factor": 0,
+    },
+    {
+        "name": "us",
+        "server": "files.rcsb.org",
+        "dir": "pub/pdb/data",
+        "transport": "https",
+        "transport_ver": "1",
+        "bw_limit_mbps": 0.0,
+        "queue_depth": 0,
+        "timeout_factor": 0,
+    },
+    {
+        "name": "br",
+        "server": "bmrb.io",
+        "dir": "ftp/pub/pdb/data",
+        "transport": "https",
+        "transport_ver": "1",
+        "bw_limit_mbps": 0.0,
+        "queue_depth": 0,
+        "timeout_factor": 0,
+    },
+    {
+        "name": "uk",
+        "server": "ftp.ebi.ac.uk",
+        "dir": "pub/databases/pdb/data",
+        "transport": "https",
+        "transport_ver": "1",
+        "bw_limit_mbps": 0.0,
+        "queue_depth": 0,
+        "timeout_factor": 0,
+    },
+    {
+        "name": "jp",
+        "server": "files.pdbj.org",
+        "dir": "pub/pdb/data",
+        "transport": "https",
+        "transport_ver": "1",
+        "bw_limit_mbps": 0.0,
+        "queue_depth": 0,
+        "timeout_factor": 0,
+    },
+]
 
 
 @contextlib.contextmanager
