@@ -1,9 +1,8 @@
-"""Work is dispatched to multiple workers and results collected via AnyIO streams."""
+"""Dispatch work to multiple workers and collect results via AnyIO streams."""
 from __future__ import annotations
 
 import sys
 from typing import Any
-from typing import Optional
 
 # third-party imports
 import anyio
@@ -57,10 +56,9 @@ class MultiDispatcher:
                     sys.exit(1)
                 worker_defs.append(all_worker_defs[worker_idx])
         self.workers = []
+        worker_factory: type[MockDownloader | Downloader] = Downloader
         if mock:
             worker_factory = MockDownloader
-        else:
-            worker_factory = Downloader
         for i, worker_def in enumerate(worker_defs):
             try:
                 worker = worker_factory(
