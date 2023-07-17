@@ -37,6 +37,7 @@ class MultiDispatcher:
         history_len: int = 0,
         output_dir: str | None = None,
         mock: bool = False,
+        runner: str = "production",
     ) -> None:
         """Save list of dispatchers."""
         if logger is None:
@@ -75,6 +76,19 @@ class MultiDispatcher:
             self._logger.error("No valid workers found.")
             sys.exit(1)
         self.max_retries = max_retries
+        self.backend_options = {}
+        if runner == "production":
+            self.backend = "asyncio"
+            if sys.platform != "win32":
+                self.backend_options = {"use_uvloop": True}
+        elif runner == "testing":
+            self.backend = "asyncio"
+            # asyncio.set_event_loop_policy(DeterministicEventLoopPolicy())
+        elif runner == "trio":
+            self.backend = "trio"
+        else:
+            self._logger.error(f"Unknown runner configuration {runner}")
+            sys.exit(1)
         self.exception_counter: dict[int, int] = {}
         self.n_too_many_retries = 0
         self.n_exceptions = 0
@@ -167,21 +181,15 @@ class MultiDispatcher:
                 idx = kwargs[INDEX_KEY]
                 await worker.unhandled_exception_handler(idx, e)
 
-    def main(self, arg_list: list[dict[str, SIMPLE_TYPES]], config: str = "production"):
+    def main(
+        self,
+        arg_list: list[dict[str, SIMPLE_TYPES]]
+        | dict[str, NonStringIterable | SIMPLE_TYPES],
+    ):
         """Start the multidispatcher queue."""
-        backend_options = {}
-        if config == "production":
-            backend = "asyncio"
-            if sys.platform != "win32":
-                backend_options = {"use_uvloop": True}
-        elif config == "testing":
-            backend = "asyncio"
-            # asyncio.set_event_loop_policy(DeterministicEventLoopPolicy())
-        elif config == "trio":
-            backend = "trio"
-        else:
-            self._logger.error(f"Unknown configuration {config}")
-            sys.exit(1)
         return anyio.run(
-            self.run, arg_list, backend=backend, backend_options=backend_options
+            self.run,
+            arg_list,
+            backend=self.backend,
+            backend_options=self.backend_options,
         )
