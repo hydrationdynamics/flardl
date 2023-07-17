@@ -11,5 +11,6 @@ from .common import RAVG  # noqa: F401
 from .common import SUM  # noqa: F401
 from .common import VALUE  # noqa: F401
 from .multidispatcher import MultiDispatcher  # noqa: F401
+from .server_defs import ServerDef  # noqa: F401
 from .stream_stats import StreamStats  # noqa: F401
 from .stream_stats import WorkerStat  # noqa: F401

@@ -1,4 +1,4 @@
-"""Test multidispatcher function with mock downloader."""
+"""Test Downloads."""
 
 import sys
 from pathlib import Path
@@ -10,13 +10,40 @@ import pytest
 
 from flardl import INDEX_KEY
 from flardl import MultiDispatcher
+from flardl import ServerDef
 
-from . import SERVER_DEFS
 from . import print_docstring
 from . import stderr_format_func
 
 
 ANYIO_BACKEND = "asyncio"
+SERVER_DEFS = [
+    ServerDef(
+        "aws",
+        "s3.rcsb.org",
+        dir="pub/pdb/data",
+    ),
+    ServerDef(
+        "us",
+        "files.rcsb.org",
+        dir="pub/pdb/data",
+    ),
+    ServerDef(
+        "br",
+        "bmrb.io",
+        dir="ftp/pub/pdb/data",
+    ),
+    ServerDef(
+        "uk",
+        "ftp.ebi.ac.uk",
+        dir="pub/databases/pdb/data",
+    ),
+    ServerDef(
+        "jp",
+        "files.pdbj.org",
+        dir="pub/pdb/data",
+    ),
+]
 
 
 @pytest.fixture

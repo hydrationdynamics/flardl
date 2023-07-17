@@ -1,4 +1,4 @@
-"""Tests for input table creation."""
+"""Initialize  data directory."""
 # third-party imports
 import shutil
 from pathlib import Path

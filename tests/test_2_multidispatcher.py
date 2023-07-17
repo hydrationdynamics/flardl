@@ -9,13 +9,31 @@ import pytest
 
 from flardl import INDEX_KEY
 from flardl import MultiDispatcher
+from flardl import ServerDef
 
-from . import SERVER_DEFS
 from . import print_docstring
 from . import stderr_format_func
 
 
 ANYIO_BACKEND = "asyncio"
+
+SERVER_DEFS = [
+    ServerDef(
+        "aws",
+        "s3.rcsb.org",
+        dir="pub/pdb/data",
+    ),
+    ServerDef(
+        "us",
+        "files.rcsb.org",
+        dir="pub/pdb/data",
+    ),
+    ServerDef(
+        "br",
+        "bmrb.io",
+        dir="ftp/pub/pdb/data",
+    ),
+]
 
 
 @pytest.fixture
@@ -30,7 +48,7 @@ async def test_anyio_multidispatcher() -> None:
     n_items = 100
     max_retries = 2
     quiet = True
-    server_list = ["aws", "us", "uk"]
+    server_list = ["aws", "us", "br"]
     logger = loguru.logger
     logger.remove()
     logger.add(sys.stderr, format=stderr_format_func)
@@ -69,7 +87,7 @@ def test_production_multidispatcher() -> None:
     n_items = 100
     max_retries = 2
     quiet = True
-    server_list = ["aws", "us", "uk"]
+    server_list = ["aws", "us", "br"]
     logger = loguru.logger
     logger.remove()
     logger.add(sys.stderr, format=stderr_format_func)

@@ -208,14 +208,17 @@ class Downloader(StreamWorker):
     def __init__(
         self,
         *args,
-        server: str = "",
-        dir: str = "",
-        transport: str = "https",
-        transport_ver: str = "1",
-        **kwargs,
+        server: str,
+        dir: str,
+        transport: str,
+        transport_ver: str,
+        bw_limit_mbps: float,
+        queue_depth: int,
+        timeout_ms: float,
+        **super_kwargs,
     ):
         """Init with id number."""
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **super_kwargs)
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
         self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (
             ConnectionError,

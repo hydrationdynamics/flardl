@@ -20,6 +20,7 @@ from .downloader import MockDownloader
 from .instrumented_streams import ArgumentStream
 from .instrumented_streams import FailureStream
 from .instrumented_streams import ResultStream
+from .server_defs import ServerDef
 from .stream_stats import StreamStats
 
 
@@ -28,7 +29,7 @@ class MultiDispatcher:
 
     def __init__(  # noqa: C901
         self,
-        all_worker_defs: list[dict[str, Any]],
+        all_worker_defs: list[ServerDef],
         /,
         worker_list: list[str] | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -44,7 +45,7 @@ class MultiDispatcher:
             self._logger = mylogger
         else:
             self._logger = logger
-        all_worker_names = [w["name"] for w in all_worker_defs]
+        all_worker_names = [w.name for w in all_worker_defs]
         if worker_list is None:
             worker_defs = all_worker_defs
         else:
@@ -63,12 +64,10 @@ class MultiDispatcher:
         for i, worker_def in enumerate(worker_defs):
             try:
                 worker = worker_factory(
-                    i, self._logger, output_dir, quiet, **worker_def
+                    i, self._logger, output_dir, quiet, **worker_def.get_all()  # type: ignore
                 )
             except Exception as e:
-                self._logger.warning(
-                    f"Worker {worker_def['name']} failed to initialize."
-                )
+                self._logger.warning(f"Worker {worker_def.name} failed to initialize.")
                 self._logger.warning(e)
                 continue
             self.workers.append(worker)
