@@ -60,7 +60,7 @@ minutes spent with a mock downloading program (such as is included in
 _flardl_) will convince you that the total download time and therefore
 the mean downloading rate depends strongly on how many large-size
 outliers (let's call them
-"[Berthas](https://en.wikipedia.org/wiki/Big_Bertha_(howitzer))")
+"[Berthas](<https://en.wikipedia.org/wiki/Big_Bertha_(howitzer)>)")
 are included in your sample. Timings of algorithms that do
 near-simultaneous, asynchronous downloads will also depend very much on
 whether the Berthas are found at the beginning or the end of the
@@ -83,7 +83,7 @@ for just that time.
 Even more than maximizing download rates, the highest priority must
 be to **avoid black-listing by a server**. Most public-facing servers
 have policies to recognize and defend against Denial-Of-Service (DOS)
-attacks.  The response to a DOS event, at the very least, causes the server to
+attacks. The response to a DOS event, at the very least, causes the server to
 dump your latest request, which is usually a minor nuisance
 as it can be retried later. Far worse is
 if the server responds by severely throttling further requests from your
@@ -99,7 +99,7 @@ possibility of launching a large number of requests and letting the
 server sort it out is a poor strategy because it maximizes the chance
 of black-listing. Given that a single server can saturate a gigabit
 connection, given enough simultaneous downloads, it seems the best
-strategy is to keep the request-queue depth as low as possible to 
+strategy is to keep the request-queue depth as low as possible to
 achieve that saturation. For those who are lucky enough to be on
 a multi-gigabit connection, it's a good idea to limit the bandwidth
 to something you know the set of servers you are using won't complain
