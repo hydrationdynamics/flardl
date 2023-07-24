@@ -214,7 +214,7 @@ class Downloader(StreamWorker):
         transport_ver: str,
         bw_limit_mbps: float,
         queue_depth: int,
-        timeout_ms: float,
+        timeout_s: float,
         **super_kwargs,
     ):
         """Init with id number."""
@@ -231,7 +231,9 @@ class Downloader(StreamWorker):
             self.http2 = True
         else:
             self.http2 = False
-        self.client = httpx.AsyncClient(base_url=self.base_url, http2=self.http2)
+        self.client = httpx.AsyncClient(
+            base_url=self.base_url, http2=self.http2, timeout=timeout_s
+        )
 
     async def worker(
         self,

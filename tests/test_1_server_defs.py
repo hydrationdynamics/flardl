@@ -15,7 +15,7 @@ def test_clean_datadir():
     assert str(a) == (
         "ServerDef(name='aws', server='s3.rcsb.org', dir='', "
         + "transport='https', transport_ver='1', bw_limit_mbps=0.0,"
-        + " queue_depth=0, timeout_ms=0.0)"
+        + " queue_depth=0, timeout_s=None)"
     )
 
     assert a.get_all() == {
@@ -26,5 +26,5 @@ def test_clean_datadir():
         "transport_ver": "1",
         "bw_limit_mbps": 0.0,
         "queue_depth": 0,
-        "timeout_ms": 0.0,
+        "timeout_s": None,
     }

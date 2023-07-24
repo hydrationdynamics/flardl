@@ -107,12 +107,11 @@ about. It would be nice if one could query a server for an acceptable
 request queue depth which would guarantee no DOS response or other
 server throttling, but I have not seen such a mechanism implemented.
 
-```{math}
-:label: equation1
-w_{t+1} = (1 + r_{t+1}) s(w_t) + y_{t+1}
-```
+This is a test of inline math $t_{m}$ and $t_{\rm lat}$. Here's a block:
 
-See [](#equation1) for more information.
+$$
+w_{t+1} = (1 + r_{t+1}) s(w_t) + y_{t+1}
+$$
 
 ## Requirements
 
