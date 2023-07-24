@@ -220,10 +220,10 @@ class Downloader(StreamWorker):
         """Init with id number."""
         super().__init__(*args, **super_kwargs)
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (
-            httpx.ConnectError,
+            httpx.HTTPStatusError,
         )
         self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (
-            ConnectionError,
+            httpx.ConnectError,
         )
         self.launch_rate = self.LAUNCH_RATE_MAX
         self.base_url = transport + "://" + server + "/"
@@ -252,5 +252,7 @@ class Downloader(StreamWorker):
                 f"Downloading {self.base_url}{path} to file {out_filename}"
             )
         response = await self.client.get(path)
+        if response.status_code != httpx.codes.OK:
+            response.raise_for_status()
         dl_data = response.content
         await self.add_result(dl_data, out_filename, idx, worker_count, result_q)

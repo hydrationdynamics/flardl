@@ -73,7 +73,7 @@ important.
 means. To put that another way, the average download time $\overline{t_{dl}}$
 varies a lot
 between runs, but the _most-common_ download time
-$\tilde{t_{dl}}$ can be pretty
+$\tilde{t}_{dl}$ can be pretty
 consistent. The mode of file lengths and the mode of download bit rate
 are both quantities that are easy to estimate for a
 collection and a collection and rarely change. If one happens to select

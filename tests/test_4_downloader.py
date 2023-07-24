@@ -21,6 +21,7 @@ SERVER_DEFS = [
     ServerDef(
         "aws",
         "s3.rcsb.org",
+        transport_ver="2",
         dir="pub/pdb/data",
     ),
     ServerDef(
@@ -86,6 +87,56 @@ async def test_single_server_download(datadir_mgr) -> None:
             "out_filename": [p.split("/")[-1] for p in paths[:max_files]],
         }
         result_list, fail_list, global_stats = await runner.run(arg_dict)
+        if len(result_list):
+            results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
+            print(f"\nResults:\n{results}")
+            results.to_csv("results.tsv", sep="\t")
+        else:
+            logger.error("No results!")
+        if len(fail_list):
+            failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
+            print(f"\nFailures:\n{failures}")
+            failures.to_csv("failures.tsv", sep="\t")
+        else:
+            logger.info("No failures.")
+        print(f"\nGlobal Stats:\n{global_stats}")
+
+
+@print_docstring()
+def test_bad_server_address(datadir_mgr) -> None:
+    """Test download from a single server."""
+    with datadir_mgr.in_tmp_dir(
+        inpathlist=[URL_FILE],
+        save_outputs=True,
+        outscope="module",
+    ):
+        with Path(URL_FILE).open("r") as fp:
+            paths = [line.strip() for line in fp]
+        max_files = 10
+        max_retries = 2
+        quiet = False
+        logger = loguru.logger
+        logger.remove()
+        logger.add(sys.stderr, format=stderr_format_func)
+        bad_servers = SERVER_DEFS + [
+            ServerDef(
+                "bad",
+                "badserver.org",
+            ),
+        ]
+        runner = MultiDispatcher(
+            bad_servers,
+            logger=logger,
+            max_retries=max_retries,
+            quiet=quiet,
+            output_dir="./downloads",
+            mock=False,
+        )
+        arg_dict = {
+            "path": paths[:max_files],
+            "out_filename": [p.split("/")[-1] for p in paths[:max_files]],
+        }
+        result_list, fail_list, global_stats = runner.main(arg_dict)
         if len(result_list):
             results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
             print(f"\nResults:\n{results}")
