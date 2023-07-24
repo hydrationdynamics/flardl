@@ -70,8 +70,10 @@ work very well on the real-world power-law collections that are most
 important.
 
 **Modal values are a good statistic for power-law distributions**, unlike
-means. To put that another way, the average download time varies a lot
-between runs, but the most-common download rate can be pretty
+means. To put that another way, the average download time $\overline{t_{dl}}$
+varies a lot
+between runs, but the _most-common_ download time
+$\tilde{t_{dl}}$ can be pretty
 consistent. The mode of file lengths and the mode of download bit rate
 are both quantities that are easy to estimate for a
 collection and a collection and rarely change. If one happens to select
@@ -106,12 +108,6 @@ to something you know the set of servers you are using won't complain
 about. It would be nice if one could query a server for an acceptable
 request queue depth which would guarantee no DOS response or other
 server throttling, but I have not seen such a mechanism implemented.
-
-This is a test of inline math $t_{m}$ and $t_{\rm lat}$. Here's a block:
-
-$$
-w_{t+1} = (1 + r_{t+1}) s(w_t) + y_{t+1}
-$$
 
 ## Requirements
 
