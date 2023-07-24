@@ -219,7 +219,9 @@ class Downloader(StreamWorker):
     ):
         """Init with id number."""
         super().__init__(*args, **super_kwargs)
-        self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
+        self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (
+            httpx.ConnectError,
+        )
         self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (
             ConnectionError,
         )

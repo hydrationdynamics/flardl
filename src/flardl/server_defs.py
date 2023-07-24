@@ -1,4 +1,5 @@
 """Define server attributes."""
+from typing import Optional
 
 from attrs import asdict
 from attrs import define
@@ -20,7 +21,7 @@ class ServerDef:
     transport_ver: str = "1"
     bw_limit_mbps: float = 0.0
     queue_depth: int = 0
-    timeout_s: float | None = None
+    timeout_s: Optional[float] = None
 
     def get_all(self) -> dict[str, SIMPLE_TYPES]:
         """Return dictionary of non-private attributes."""
