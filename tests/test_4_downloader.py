@@ -68,7 +68,6 @@ async def test_single_server_download(datadir_mgr) -> None:
             paths = [line.strip() for line in fp]
         max_files = 5
         max_retries = 2
-        quiet = False
         server_list = ["aws"]
         logger = loguru.logger
         logger.remove()
@@ -78,7 +77,7 @@ async def test_single_server_download(datadir_mgr) -> None:
             worker_list=server_list,
             logger=logger,
             max_retries=max_retries,
-            quiet=quiet,
+            quiet=True,
             output_dir="./downloads",
             mock=False,
         )
@@ -87,24 +86,46 @@ async def test_single_server_download(datadir_mgr) -> None:
             "out_filename": [p.split("/")[-1] for p in paths[:max_files]],
         }
         result_list, fail_list, global_stats = await runner.run(arg_dict)
-        if len(result_list):
-            results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
-            print(f"\nResults:\n{results}")
-            results.to_csv("results.tsv", sep="\t")
-        else:
-            logger.error("No results!")
-        if len(fail_list):
-            failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
-            print(f"\nFailures:\n{failures}")
-            failures.to_csv("failures.tsv", sep="\t")
-        else:
-            logger.info("No failures.")
-        print(f"\nGlobal Stats:\n{global_stats}")
+        assert len(fail_list) == 0
+        assert len(result_list) == max_files
+
+
+@print_docstring()
+def test_bad_url(datadir_mgr) -> None:
+    """Test downloads with a bad url."""
+    with datadir_mgr.in_tmp_dir(
+        inpathlist=[URL_FILE],
+        save_outputs=True,
+        outscope="module",
+    ):
+        with Path(URL_FILE).open("r") as fp:
+            paths = [line.strip() for line in fp]
+        max_files = 5
+        max_retries = 2
+        logger = loguru.logger
+        logger.remove()
+        logger.add(sys.stderr, format=stderr_format_func)
+        runner = MultiDispatcher(
+            SERVER_DEFS,
+            logger=logger,
+            max_retries=max_retries,
+            quiet=True,
+            output_dir="./downloads",
+            mock=False,
+        )
+        arg_dict = {
+            "path": paths[:max_files] + ["structures/all/mmCIF/xxxx.cif.gz"],
+            "out_filename": [p.split("/")[-1] for p in paths[:max_files]]
+            + ["imabadurl.txt"],
+        }
+        result_list, fail_list, global_stats = runner.main(arg_dict)
+        assert len(fail_list) == 1
+        assert len(result_list) == max_files
 
 
 @print_docstring()
 def test_bad_server_address(datadir_mgr) -> None:
-    """Test download from a single server."""
+    """Test downloads with a failed server."""
     with datadir_mgr.in_tmp_dir(
         inpathlist=[URL_FILE],
         save_outputs=True,
@@ -114,21 +135,20 @@ def test_bad_server_address(datadir_mgr) -> None:
             paths = [line.strip() for line in fp]
         max_files = 10
         max_retries = 2
-        quiet = False
         logger = loguru.logger
         logger.remove()
         logger.add(sys.stderr, format=stderr_format_func)
         bad_servers = SERVER_DEFS + [
             ServerDef(
                 "bad",
-                "badserver.org",
+                "badserver.address",
             ),
         ]
         runner = MultiDispatcher(
             bad_servers,
             logger=logger,
             max_retries=max_retries,
-            quiet=quiet,
+            quiet=True,
             output_dir="./downloads",
             mock=False,
         )
@@ -137,24 +157,13 @@ def test_bad_server_address(datadir_mgr) -> None:
             "out_filename": [p.split("/")[-1] for p in paths[:max_files]],
         }
         result_list, fail_list, global_stats = runner.main(arg_dict)
-        if len(result_list):
-            results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
-            print(f"\nResults:\n{results}")
-            results.to_csv("results.tsv", sep="\t")
-        else:
-            logger.error("No results!")
-        if len(fail_list):
-            failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
-            print(f"\nFailures:\n{failures}")
-            failures.to_csv("failures.tsv", sep="\t")
-        else:
-            logger.info("No failures.")
-        print(f"\nGlobal Stats:\n{global_stats}")
+        assert len(fail_list) == 0
+        assert len(result_list) == max_files
 
 
 @print_docstring()
 def test_production_download(datadir_mgr) -> None:
-    """Test download from a single server."""
+    """Test production downloads on a longish list."""
     with datadir_mgr.in_tmp_dir(
         inpathlist=[URL_FILE],
         save_outputs=True,
@@ -164,7 +173,6 @@ def test_production_download(datadir_mgr) -> None:
             paths = [line.strip() for line in fp]
         max_files = -1
         max_retries = 2
-        quiet = False
         logger = loguru.logger
         logger.remove()
         logger.add(sys.stderr, format=stderr_format_func)
@@ -172,7 +180,7 @@ def test_production_download(datadir_mgr) -> None:
             SERVER_DEFS,
             logger=logger,
             max_retries=max_retries,
-            quiet=quiet,
+            quiet=True,
             output_dir="./downloads",
             mock=False,
         )
@@ -193,4 +201,6 @@ def test_production_download(datadir_mgr) -> None:
             failures.to_csv("failures.tsv", sep="\t")
         else:
             logger.info("No failures.")
-        print(f"\nGlobal Stats:\n{global_stats}")
+        print("\nGlobal Stats:")
+        for key, value in global_stats.items():
+            print(f"   {key}: {value}")

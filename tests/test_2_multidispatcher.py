@@ -4,7 +4,6 @@ import sys
 
 # third-party imports
 import loguru
-import pandas as pd
 import pytest
 
 from flardl import INDEX_KEY
@@ -66,24 +65,14 @@ async def test_anyio_multidispatcher() -> None:
         "file_type": "txt",
     }
     result_list, fail_list, global_stats = await runner.run(arg_dict)
-    if len(result_list):
-        results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
-        print(f"\nResults:\n{results}")
-        results.to_csv("results.tsv", sep="\t")
-    else:
-        logger.error("No results!")
-    if len(fail_list):
-        failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
-        print(f"\nFailures:\n{failures}")
-        failures.to_csv("failures.tsv", sep="\t")
-    else:
-        logger.info("No failures.")
-    print(f"\nGlobal Stats:\n{global_stats}")
+    n_failed = len(fail_list)
+    assert n_failed == 3
+    assert len(result_list) == n_items - n_failed
 
 
 @print_docstring()
 def test_production_multidispatcher() -> None:
-    """Test multidispatcheri using indeterminate event loop."""
+    """Test multidispatcher using indeterminate event loop."""
     n_items = 100
     max_retries = 2
     quiet = True
@@ -105,16 +94,6 @@ def test_production_multidispatcher() -> None:
         "file_type": "txt",
     }
     result_list, fail_list, global_stats = runner.main(arg_dict)
-    if len(result_list):
-        results = pd.DataFrame.from_dict(result_list).set_index(INDEX_KEY)
-        print(f"\nResults:\n{results}")
-        results.to_csv("results.tsv", sep="\t")
-    else:
-        logger.error("No results!")
-    if len(fail_list):
-        failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
-        print(f"\nFailures:\n{failures}")
-        failures.to_csv("failures.tsv", sep="\t")
-    else:
-        logger.info("No failures.")
-    print(f"\nGlobal Stats:\n{global_stats}")
+    n_failed = len(fail_list)
+    assert n_failed == 3
+    assert len(result_list) == n_items - n_failed

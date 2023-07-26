@@ -222,9 +222,7 @@ class Downloader(StreamWorker):
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (
             httpx.HTTPStatusError,
         )
-        self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (
-            httpx.ConnectError,
-        )
+        self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
         self.launch_rate = self.LAUNCH_RATE_MAX
         self.base_url = transport + "://" + server + "/"
         if dir != "":
@@ -247,12 +245,10 @@ class Downloader(StreamWorker):
         out_filename: str,
     ):
         """Download a file."""
-        if not self.quiet:
-            self._logger.info(
-                f"Downloading {self.base_url}{path} to file {out_filename}"
-            )
         response = await self.client.get(path)
         if response.status_code != httpx.codes.OK:
             response.raise_for_status()
         dl_data = response.content
+        if not self.quiet:
+            print(out_filename)
         await self.add_result(dl_data, out_filename, idx, worker_count, result_q)

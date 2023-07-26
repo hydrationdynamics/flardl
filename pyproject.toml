@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flardl"
-version = "0.0.5"
+version = "0.0.6"
 description = "Flardl"
 authors = ["Joel Berendzen <joel@generisbio.com>"]
 license = "BSD-3-Clause"
@@ -44,7 +44,7 @@ trio = "^0.22.0"
 [tool.poetry.group.dev.dependencies]
 Pygments = ">=2.10.0"
 bandit = ">=1.7.4"
-black = ">=21.10b0"
+black = ">=23.7.0"
 coverage = {extras = ["toml"], version = ">=6.2"}
 flake8 = ">=4.0.1"
 flake8-bugbear = ">=21.9.2"

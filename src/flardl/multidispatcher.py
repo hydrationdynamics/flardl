@@ -6,6 +6,7 @@ from typing import Any
 
 # third-party imports
 import anyio
+import httpx
 import loguru
 from loguru import logger as mylogger
 
@@ -143,17 +144,17 @@ class MultiDispatcher:
                 kwargs, worker_count = await arg_q.get(worker_name=worker.name)
             except anyio.WouldBlock:
                 return
-            # Do rate limiting, if a limiter is found in worker.
-            try:
-                await worker.limiter()
-            except AttributeError:
-                pass  # it's okay if worker didn't have a limiter
+            if worker_count > 0:
+                # Do rate limiting, if a limiter is found in worker.
+                try:
+                    await worker.limiter()
+                except AttributeError:
+                    pass  # it's okay if worker didn't have a limiter
             # Do the work and handle any exceptions encountered.
             try:
                 await worker.worker(result_q, worker_count, **kwargs)
             except worker.soft_exceptions as e:
                 # Errors to be requeued by worker, unless too many
-                idx = kwargs[INDEX_KEY]
                 async with self._lock:
                     idx = kwargs[INDEX_KEY]
                     self.n_exceptions += 1
@@ -175,6 +176,15 @@ class MultiDispatcher:
                 await worker.hard_exception_handler(
                     idx, worker.name, worker_count, e, failure_q
                 )
+            except httpx.ConnectError:
+                await worker.soft_exception_handler(
+                    kwargs,
+                    worker.name,
+                    worker_count,
+                    f"Server '{worker.name!r}' shutdown due to ConnectError",
+                    arg_q,
+                )
+                return
             except Exception as e:
                 # unhandled errors go to unhandled exception handler
                 idx = kwargs[INDEX_KEY]
