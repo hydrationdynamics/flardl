@@ -1,5 +1,4 @@
 """Downloads as a MultiDispatcher worker class."""
-from __future__ import annotations
 
 import pathlib
 import sys
@@ -25,7 +24,7 @@ class StreamWorker:
     def __init__(
         self,
         worker_no: int,
-        logger: loguru.Logger,
+        logger: "loguru.Logger",
         output_dir: str | None,
         quiet: bool,
         /,

@@ -152,8 +152,6 @@ def mypy(session: Session) -> None:
     args = session.posargs or ["src"]
     session.install(".")
     session.install(
-        "loguru",
-        "loguru-mypy",
         "mypy",
         "pandas",
         "pandas-stubs",
@@ -205,7 +203,6 @@ def typeguard(session: Session) -> None:
     session.install(".")
     session.install(
         "hypothesis",
-        "loguru-mypy",
         "pandas",
         "pandas-stubs",
         "pygments",

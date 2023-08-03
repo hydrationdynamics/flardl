@@ -1,8 +1,8 @@
 """Dispatch work to multiple workers and collect results via AnyIO streams."""
-from __future__ import annotations
 
 import sys
 from typing import Any
+from typing import Optional
 
 # third-party imports
 import anyio
@@ -34,7 +34,7 @@ class MultiDispatcher:
         /,
         worker_list: list[str] | None = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        logger: loguru.Logger | None = None,
+        logger: Optional["loguru.Logger"] = None,
         quiet: bool = False,
         history_len: int = 0,
         output_dir: str | None = None,
