@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flardl"
-version = "0.0.6"
+version = "0.0.7"
 description = "Flardl"
 authors = ["Joel Berendzen <joel@generisbio.com>"]
 license = "BSD-3-Clause"
@@ -9,7 +9,7 @@ homepage = "https://github.com/hydrationdynamics/flardl"
 repository = "https://github.com/hydrationdynamics/flardl"
 documentation = "https://flardl.readthedocs.io"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
@@ -18,11 +18,14 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Internet :: WWW/HTTP",
 ]
 keywords = [
     "downloads",
+    "asynchronous",
+    "high-performance",
+    "multi-dispatching",
+    "queueing",
     "adaptive",
     "federated"
 ]
