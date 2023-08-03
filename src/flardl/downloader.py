@@ -4,6 +4,7 @@ import pathlib
 import sys
 from typing import Any
 from typing import Optional
+from typing import Union
 
 # third-party imports
 import anyio
@@ -64,7 +65,7 @@ class StreamWorker:
 
     async def add_result(
         self,
-        data: bytes | str,
+        data: Union[bytes, str],
         filename: str,
         idx: int,
         worker_count: int,
@@ -170,8 +171,8 @@ class MockDownloader(StreamWorker):
         worker_count: int,
         /,
         idx: int,
-        code: str | None = None,
-        file_type: str | None = None,
+        code: Optional[str] = None,
+        file_type: Optional[str] = None,
     ):
         """Do a work unit."""
         if idx in self.SOFT_FAILS:
