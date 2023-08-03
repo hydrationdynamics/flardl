@@ -3,6 +3,7 @@
 import sys
 from typing import Any
 from typing import Optional
+from typing import Union
 
 # third-party imports
 import anyio
@@ -32,12 +33,12 @@ class MultiDispatcher:
         self,
         all_worker_defs: list[ServerDef],
         /,
-        worker_list: list[str] | None = None,
+        worker_list: Optional[list[str]] = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
         logger: Optional["loguru.Logger"] = None,
         quiet: bool = False,
         history_len: int = 0,
-        output_dir: str | None = None,
+        output_dir: Optional[str]  = None,
         mock: bool = False,
         runner: str = "production",
     ) -> None:
@@ -100,9 +101,9 @@ class MultiDispatcher:
 
     async def run(
         self,
-        args: (
-            list[dict[str, SIMPLE_TYPES]] | dict[str, NonStringIterable | SIMPLE_TYPES]
-        ),
+        args: Union[
+            list[dict[str, SIMPLE_TYPES]], dict[str, NonStringIterable, SIMPLE_TYPES]
+        ],
     ):
         """Run the multidispatcher queue."""
         if isinstance(args, list):
@@ -192,8 +193,8 @@ class MultiDispatcher:
 
     def main(
         self,
-        arg_list: list[dict[str, SIMPLE_TYPES]]
-        | dict[str, NonStringIterable | SIMPLE_TYPES],
+        arg_list: Union[list[dict[str, SIMPLE_TYPES]],
+        dict[str, Union[NonStringIterable SIMPLE_TYPES]]],
     ):
         """Start the multidispatcher queue."""
         return anyio.run(
