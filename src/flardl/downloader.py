@@ -3,6 +3,7 @@
 import pathlib
 import sys
 from typing import Any
+from typing import Optional
 
 # third-party imports
 import anyio
@@ -25,7 +26,7 @@ class StreamWorker:
         self,
         worker_no: int,
         logger: "loguru.Logger",
-        output_dir: str | None,
+        output_dir: Optional[str],
         quiet: bool,
         /,
         name: str,
