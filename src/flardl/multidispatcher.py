@@ -102,7 +102,8 @@ class MultiDispatcher:
     async def run(
         self,
         args: Union[
-            list[dict[str, SIMPLE_TYPES]], dict[str, NonStringIterable, SIMPLE_TYPES]
+            list[dict[str, SIMPLE_TYPES]],
+            dict[str, Union[NonStringIterable, SIMPLE_TYPES]],
         ],
     ):
         """Run the multidispatcher queue."""
