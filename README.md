@@ -33,7 +33,7 @@ _Flardl_ downloads lists of files using an approach that
 adapts to local conditions and is elastic with respect
 to changes in network performance and server loads.
 _Flardl_ achieves download rates **typically more than
-300X higherr** than synchronous utilities such as _curl_,
+300X higher** than synchronous utilities such as _curl_,
 while use of multiple servers while providing superior
 robustness and protection against blacklisting for
 installations anywhere in the world. Download rates depend
@@ -56,6 +56,7 @@ for 1000 randomly-sampled CIF structure files from the
 [Protein Data Bank](https://rcsb.org),
 along with a kernel-density estimate and fits to log-normal and
 normal distributions.
+
 ![sizedist](https://raw.githubusercontent.com/hydrationdynamics/flardl/main/docs/_static/file_size_distribution.png)
 
 Algorithms that use per-file rates alone and ignore the effects
@@ -77,7 +78,7 @@ either through launching requests too slowly or through letting
 queues run too deep when big files are encountered.
 
 While the mean per-file download rate varies a lot between runs, the
-_most-common_ per-file download rate $\tilde{k}_{\rm file}$ can be more
+_most-common_ per-file download rate $\tilde{k}_{file}$ can be more
 consistent, at least on timescale over which network performance
 and server loads are consistent. It's not a surprise that downloads
 can take longer if you are watching a video at the same time. The
@@ -86,8 +87,8 @@ bandwidth, but because your LAN has to be shared between two demand
 stream. Higher predictability and performance can be achieved by
 breaking down the modal per-file rate $\tilde{k}_{\rm file}$ into
 modal file size $\tilde{s}$, assumed highly stable over time, and
-the achievable bit rate of your LAN, $b{\rm act}$, which is often
-near the maximum rate your LAN vendor sold you $b{\rm max}$, but
+the achievable bit rate of your LAN, $b_{\rm act}$, which is often
+near the maximum rate your LAN vendor sold you $b_{\rm max}$, but
 can be reduced due to demand from unseen competing processes.
 
 ## Avoiding Blacklists
