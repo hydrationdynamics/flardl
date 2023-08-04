@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flardl"
-version = "0.0.7"
+version = "0.0.8"
 description = "Flardl"
 authors = ["Joel Berendzen <joel@generisbio.com>"]
 license = "BSD-3-Clause"
@@ -27,6 +27,8 @@ keywords = [
     "multi-dispatching",
     "queueing",
     "adaptive",
+    "elastic",
+    "adaptilastic",
     "federated"
 ]
 

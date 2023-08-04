@@ -52,87 +52,103 @@ Examples of analytical forms of long-tail distributions include
 Zipf, power-law, and log-norm distributions. A real-world example
 of a long-tail distribution is shown in the figure below, which
 plots the file-size histogram for 1000 randomly-sampled examples
-CIF structure files from the [Protein Data Bank](https://rcsb.org) along with
-a kernel-density estimate and fits to log-normal and normal
-distributions.
+CIF structure files from the [Protein Data Bank](https://rcsb.org)
+along with a kernel-density estimate and fits to log-normal and
+normal distributions.
 
 ![sizedist](https://raw.githubusercontent.com/hydrationdynamics/flardl/main/docs/_static/file_size_distribution.png)
 
-The effects of
-the big files in the long tail are frequently ignored in queuing
-algorithms.
-
-The nature of long-tail distributions is such that **mean values are nearly
-worthless** because--unlike on normal distributions--means of runs drawn
+There are big effects on overall statistics from the big files in
+the long tail, effects that are frequently ignored in queueing
+literature and many queuing algorithms which treat collections
+as normal-ish. The biggest single issue, which can be seen in
+the difference between normal-distribution fits to a
+randomly-selected 5% and the full 1000 points in the figure above,
+is that **mean values are neither stable nor characteristic of the
+distribution**. Unlike on normal distributions--means of runs drawn
 from them grow larger with the size of the run. Because of the appreciable
-likelihood of drawing a really large file to be downloaded from a long-tail
-distribution, he total download time and therefore the mean downloading rate
-depends strongly on how many large-size outliers are included in your sample. Timings of algorithms that do
-If you are downloading multiple files simultaneously, the overall download
-time may also depend strongly on whether a large file happens to occur at
-the end of the list, causing an "overhang" of wwaiting for a single file.
-Theories and algorithms based on overall times or mean rates won't
-work very well on the long-tail distributions that often characterize
-real collections. T
+likelihood of drawing a really large file to be downloaded, the total
+download time $t_{\rm tot}$ and therefore the mean per-file download rate
+$\overline{k_{\rm file}}$ both depend strongly on how many big-file outliers
+are included in your sample. If you are downloading multiple files
+simultaneously, the overall download time may also depend strongly on
+where in the list the large files happen to occur, because those at
+the end can cause an "overhang" of a single stream waiting for that file.
 
-**Modal values are a good statistic for power-law distributions**, unlike
-means. To put that another way, the average download time $\overline{t_{dl}}$
-varies a lot
-between runs, but the _most-common_ download time
-$\tilde{t}_{dl}$ can be pretty
-consistent. The mode of file lengths and the mode of download bit rate
-are both quantities that are easy to estimate for a
-collection and a collection and rarely change. If one happens to select
-the biggest files for downloading, or if one happens to try downloading
-a long collection at the same time that someone is watching a high-bit-rate
-video on the same shared connection, then it's easy to adjust a bit
-for just that time.
-
-Here I propose a heuristic called **adaptive-depth queuing**
-that gives robust performance in real situations while being simple
-enough to be easily understood and coded.
+While the mean per-file download rate varies a lot between runs, the
+_most-common_ per-file download rate $\tilde{k}_{\rm file}$ can be more
+consistent, at least on the timescale of days. If you are downloading a
+long list of files at the same time that someone else on your LAN
+is watching a video, then you may not achieve the same saturation
+bit rate $b{\rm sat}$ as when you're the only network user. The modal
+file size of a collection can be quite stable over time, so we have hope
+that if we formulate download times in terms of the modal file size
+and that day's estimated server latencies and achievable download
+bit rate, the situation might be more tractable still.
 
 Even more than maximizing download rates, the highest priority must
 be to **avoid black-listing by a server**. Most public-facing servers
 have policies to recognize and defend against Denial-Of-Service (DOS)
-attacks. The response to a DOS event, at the very least, causes the server to
-dump your latest request, which is usually a minor nuisance
-as it can be retried later. Far worse is
-if the server responds by severely throttling further requests from your
-IP address for hours or sometime days.
-Worst of all, your IP address can get the "death penalty" and be put
-on a permanent blacklist that may require manual intervention for
-removal. You generally don't know thThe simplest
-possibility of le trigger levels for these policies.
-Worse still, it might not even be you. I have seen a practical class
-of 20 students brought to a complete halt
-by a server's 24-hour black-listing of the institution's IP address.
+attacks. The response to a DOS event, at the very least, causes the
+server to dump your latest request, which is usually a minor nuisance
+as it can be retried later. Far worse is if the server responds by
+severely throttling further requests from your IP address for hours
+or sometime days. Worst of all, your IP address can get the "death
+penalty" and be put on a permanent blacklist that may require manual
+intervention for removal. You generally don't know thThe simplest
+possibility of le trigger levels for these policies. Blacklisting
+might not even be your personal fault, but a collective problem.
+I have seen a practical class of 20 students brought to a complete
+halt by a server's 24-hour black-listing of the institution's
+public IP address.
 
-Simply launching a large number of requests and letting the
-servers sort it out is a strategy that maximizes the chance
-of black-listing for two reasons. First, this strategy results in
-equal division of transfers without regard to varying transfer sizes or
-server latencies. Second,
+An analogy might help us here. Let's say you are a person who
+enjoys keeping track of statistics, and you decide to try
+fishing. At first, you have a single fishing rod and you go
+fishing at a series of local lakes where your catch consists
+of small bony fishes called "crappies". Your records reval
+that while the rate of catching fishes can vary from day to
+day--fish might be hungry or not--the average size of your
+catch is pretty stable. Bigger ponds tend to have bigger fish
+in them, and it might take slightly longer to reel in a bigger
+crappie than a small one, but big and small averages out to
+that pond.
 
-Given that a single server can saturate a gigabit
-connection, given enough simultaneous downloads, a better
-strategy is to **keep the total request-queue depth just high enough to
-achieve saturation**. This goal can be achieved by launching a large
-number of requests, up to some maximum permissible queue depth
-$Q_{\rm max}$ (either by guess or by previous knowledge of individual
-servers), during the server latency period when no transfers have been
-completed. As transfers are completed, one can then calculate the
-saturation bandwidth $B$ and
-the total-over-all-servers depth at which saturation was achieved,
-$Q_{\rm sat}$
+Then one day you decide you love fishing so much, you drive
+to the coast and charter a fishing boat. On that boat,
+you can set out as many lines as you want (up to some limit)
+and fish in parallel. At first, you seem to be catching the
+ocean-going equivalent of crappies, small bony fishes. But
+then you hook a small shark, which not only takes a lot of
+your time and attention to reel in, but which totally skews
+your estimate of average weight of your catch. You know that
+if you can catch a small shark, then maybe if you fish for
+long enough you might catch a big shark, or even a small whale.
+But you and your crew can only effecively reel in so
+many hooked lines at once. Putting out more lines than
+that effective limit of hooked- plus waiting-to-be-hooked
+lines only results in fishes waiting on the line, when they
+may break the line or get partly eaten before you can reel
+them in.
 
-running the
-request For those who are lucky enough to be on
-a multi-gigabit connection, it's a good idea to limit the bandwidth
-to something you know the set of servers you are using won't complain
-about. It would be nice if one could query a server for an acceptable
-request queue depth which would guarantee no DOS response or other
-server throttling, but I have not seen such a mechanism implemented.
+Here I propose and implement a method called **adaptilastic
+queuing** that gives robust performance in real situations
+while being simple enough to be easily understood and coded.
+The basis of edaptilastic queueing is keeping the total
+request-queue depth just high enough to achieve saturation.
+The method launches a large number of requests at the most-likely
+per-file rate at saturation, up to some maximum permissible
+per-server queue depth $D_{i}_{\rm max}$ (either by guess or
+by previous knowledge of individual servers) during the period
+before any transfers have completed. As transfers are completed,
+the method estimates the total-over-all-servers depth at which
+saturation was achieved, and updates its estimate of the
+achievable line bit rate and the most-likely per-file return
+rate on a per-server basis as the bases for managing future
+requests. Servers that return modal-length files (crappies)
+more quickly thus are given a better chance at nabbing an
+open queue slot without penalizing a server that happened
+to draw a big download (whale).
 
 ## Requirements
 
