@@ -38,7 +38,7 @@ class MultiDispatcher:
         logger: Optional["loguru.Logger"] = None,
         quiet: bool = False,
         history_len: int = 0,
-        output_dir: Optional[str]  = None,
+        output_dir: Optional[str] = None,
         mock: bool = False,
         runner: str = "production",
     ) -> None:
@@ -193,8 +193,10 @@ class MultiDispatcher:
 
     def main(
         self,
-        arg_list: Union[list[dict[str, SIMPLE_TYPES]],
-        dict[str, Union[NonStringIterable SIMPLE_TYPES]]],
+        arg_list: Union[
+            list[dict[str, SIMPLE_TYPES]],
+            dict[str, Union[NonStringIterable, SIMPLE_TYPES]],
+        ],
     ):
         """Start the multidispatcher queue."""
         return anyio.run(
