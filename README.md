@@ -78,15 +78,15 @@ either through launching requests too slowly or through letting
 queues run too deep when big files are encountered.
 
 While the *mean* per-file download rate isn't a good statistic, the
-*most-common* per-file download rate $k^{\prime}_{\rm file}$ can be
+*most-common* per-file download rate $k^\prime_{\rm file}$ can be
 more consistent, at least on timescale over which network performance
 and server loads are consistent. It's not a surprise that downloads
 can take longer if you are watching a video at the same time. The
 slowing is usually not because your computer runs out of processor
 bandwidth, but because your LAN has to be shared between two demand
 stream. Higher predictability and performance can be achieved by
-breaking down the modal per-file rate $k^{\prime}_{\rm file}$ into
-modal file size $S^{\prime}$, assumed highly stable over time, and
+breaking down the modal per-file rate $k^\prime_{\rm file}$ into
+modal file size $S^\prime$, assumed highly stable over time, and
 the achievable bit rate of your LAN, $B_{\rm act}$, which is often
 near the maximum rate your LAN vendor sold you $B_{\rm max}$, but
 can be reduced due to demand from competing uses.
@@ -142,17 +142,17 @@ them in.
 
 ## Adaptilastic Queueing
 
-_Flardl_ implements a method I call "adaptilastic"
+*Flardl* implements a method I call "adaptilastic"
 queueing to deliver robust performance in real situations,
 while being simple enough to be easily understood and coded.
 The basis of edaptilastic queueing is setting the total
 request-queue depth, across all servers, just high enough
 to saturate the total downloading bit rate. On startup,
-_flardl_ launches requests at all servers the most-likely
+*flardl* launches requests at all servers the most-likely
 per-file rate at saturation, up to some maximum permissible
 per-server queue depth $D_{\rm max_{i}}$ (set either by guess or
 by previous knowledge of individual servers). As transfers are
-completed, _flardl_ estimates the depth at which saturation
+completed, *flardl* estimates the depth at which saturation
 was achieved (totalled over all servers), and updates its
 estimate of the achievable line bit rate and the most-likely
 per-file return rate on a per-server basis. These values form
@@ -164,15 +164,15 @@ that happen to draw a big downloads (whales).
 
 ## Requirements
 
-_Flardl_ is tested under python 3.11, on Linux, MacOS, and
+*Flardl* is tested under python 3.11, on Linux, MacOS, and
 Windows and under 3.9 and 3.10 on Linux. Under the hood,
-_flardl_ relies on [httpx](https://www.python-httpx.org/) and is supported
+*flardl* relies on [httpx](https://www.python-httpx.org/) and is supported
 on whatever platforms that library works under, for both HTTP/1.1
 and HTTP/2.
 
 ## Installation
 
-You can install _Flardl_ via [pip] from [PyPI]:
+You can install *Flardl* via [pip] from [PyPI]:
 
 ```console
 $ pip install flardl
@@ -191,7 +191,7 @@ To learn more, see the [Contributor Guide].
 ## License
 
 Distributed under the terms of the [BSD 3-clause_license][license],
-_Flardl_ is free and open source software.
+*Flardl* is free and open source software.
 
 ## Issues
 
@@ -200,7 +200,7 @@ please [file an issue] along with a detailed description.
 
 ## Credits
 
-_Flardl_ was written by Joel Berendzen.
+*Flardl* was written by Joel Berendzen.
 
 [pypi]: https://pypi.org/
 [file an issue]: https://github.com/hydrationdynamics/flardl/issues
