@@ -29,11 +29,11 @@
 
 ## Features
 
-_Flardl_ downloads lists of files using an approach that
+*Flardl* downloads lists of files using an approach that
 adapts to local conditions and is elastic with respect
 to changes in network performance and server loads.
-_Flardl_ achieves download rates **typically more than
-300X higher** than synchronous utilities such as _curl_,
+*Flardl* achieves download rates **typically more than
+300X higher** than synchronous utilities such as *curl*,
 while use of multiple servers while providing superior
 robustness and protection against blacklisting for
 installations anywhere in the world. Download rates depend
@@ -77,8 +77,8 @@ total time or average per-file rates will give poor performance,
 either through launching requests too slowly or through letting
 queues run too deep when big files are encountered.
 
-While the mean per-file download rate varies a lot between runs, the
-_most-common_ per-file download rate $\tilde{k}_{file}$ can be more
+While the *mean* per-file download rate isn't a good statistic, the
+*most-common* per-file download rate $k_{\rm file}$ can be more
 consistent, at least on timescale over which network performance
 and server loads are consistent. It's not a surprise that downloads
 can take longer if you are watching a video at the same time. The
@@ -86,10 +86,10 @@ slowing is usually not because your computer runs out of processor
 bandwidth, but because your LAN has to be shared between two demand
 stream. Higher predictability and performance can be achieved by
 breaking down the modal per-file rate $\tilde{k}_{\rm file}$ into
-modal file size $\tilde{s}$, assumed highly stable over time, and
-the achievable bit rate of your LAN, $b_{\rm act}$, which is often
-near the maximum rate your LAN vendor sold you $b_{\rm max}$, but
-can be reduced due to demand from unseen competing processes.
+modal file size $\tilde{S}$, assumed highly stable over time, and
+the achievable bit rate of your LAN, $B_{\rm act}$, which is often
+near the maximum rate your LAN vendor sold you $B_{\rm max}$, but
+can be reduced due to demand from competing uses.
 
 ## Avoiding Blacklists
 
