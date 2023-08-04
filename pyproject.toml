@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "flardl"
 version = "0.0.8"
-description = "Flardl"
+description = "Adaptive elastic Multi-Site Downloading"
 authors = ["Joel Berendzen <joel@generisbio.com>"]
 license = "BSD-3-Clause"
 readme = "README.md"
@@ -21,15 +21,15 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 keywords = [
-    "downloads",
+    "downloading",
     "asynchronous",
-    "high-performance",
-    "multi-dispatching",
+    "multidispatching",
     "queueing",
     "adaptive",
     "elastic",
     "adaptilastic",
-    "federated"
+    "federated",
+    "high-performance",
 ]
 
 [tool.poetry.urls]
