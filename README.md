@@ -57,14 +57,15 @@ estimate and fits to log-normal and normal distributions.
 
 ![sizedist](https://raw.githubusercontent.com/hydrationdynamics/flardl/main/docs/_static/file_size_distribution.png)
 
-Queueing algorithms that rely upon per-file rates as a
-control mechanism implicitly assume that queue statistic
-can be approximated with a normal distribution and largely
-ignore the effects of big files on overall download
-statistics. One issue that results from this assumption is
-that **mean values are neither stable nor characteristic
-of the distribution**. As can be seen in the fits above,
-the mean and standard distribution of samples drawn from a
+Queueing algorithms that rely upon per-file rates as the
+pricipal control mechanism implicitly assume that queue
+statistic can be approximated with a normal distribution.
+In making that assumption, they largely ignore the effects
+of big files on overall download statistics. Such software
+inevitably encounters big problems because **mean values
+are neither stable nor characteristic of the distribution**.
+As can be seen in the fits above, the mean and standard
+distribution of samples drawn from a
 long-tail distribution tend to grow with increasing sample
 size, with the distribution to 5% of the data giving a
 markedly-lower mean and standard deviation than the fit to
@@ -82,43 +83,95 @@ at least on timescales over which network and server performance
 are consistent. You are not guaranteed to be the only user of
 either your WAN connection nor of the server, and sharing those
 resources impact download statistics in different ways, especially
-if multiple servers are involved. If we ignore complications such as
-(Head-Of-Line blocking)[https://en.wikipedia.org/wiki/Head-of-line_blocking]
-in both the server queue and transport layers, we can write the
-time required to receive file $i$ from server $j$ as:
+if multiple servers are involved. Ethernet is a packet-switched
+network, but if we ignore the effects of finite packet sizes, we
+can write the time required to receive file $i$ from server $j$
+as approximately given by
 
 $$
-  t_{i} = (t_{\rm lat} + (1 + c_{\rm prot}) S^{\prime}/B_{\rm act})
+  t_{i} \approx L_j + H_j(D_j) +
+     (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i
 $$
 
-Higher predictability and performance
-can be achieved by breaking down the modal per-file rate
-$k^\prime_{\rm file}$ into the modal file size $S^\prime$, assumed
-highly stable over time, the server latency $t_{\rm lat}$ and
-the achievable bit rate of your LAN, $B_{\rm act}$:
-$B_{\rm act}$ is often near the maximum rate your LAN vendor sold
-you $B_{\rm max}$, but can be reduced due to demand from
-competing uses. $c_{\rm prot}$ is a HTTP-protocol-dependent
-latency that is near zero for HTTP/3 and is much less than one
-in any case.
+where
 
-## Avoiding Blacklists
+- $L_j$ is the server-dependent service latency, more-or-less
+  the same as the value one gets from the _ping_ command,
+- $H_j$ is the server-dependent
+  [Head-Of-Line latency](https://en.wikipedia.org/wiki/Head-of-line_blocking)
+  that encompasses a potentially dominant effect of waiting to
+  get an active slot and a strong function of the
+  server queue depth $D_j$,
+- $c_{\rm ack}$ is a value reflecting the number of service latencies
+  required and the number of bytes transferred per acknowledgement,
+  and is nearly constant given the HTTP and network protocols,
+- $S_i$ is the size of file $i$,
+- $B_{\rm eff}$ is the effective download bit rate, which may
+  be determined through network interface statistic at
+  saturation.
 
-Even more than maximizing download rates, the highest priority must
-be to **avoid black-listing by a server**. Most public-facing servers
-have policies to recognize and defend against Denial-Of-Service (DOS)
-attacks. The response to a DOS event, at the very least, causes the
-server to dump your latest request, which is usually a minor nuisance
-as it can be retried later. Far worse is if the server responds by
-severely throttling further requests from your IP address for hours
+Looking at this expression, we see that service times are linear
+in file size so long as the queue depth is small enough that
+all requests get queue slots immediately amd $H_j$ is zero.
+In that case, the slope of the line is given by the effective
+download bit rate and the fraction of time spent acknowledging
+packet recipts, while the intercept is given by the service
+latency. The effective bit
+rate can be measured from kernel network packet counts after
+enough simultaneous requests are going to saturate the network
+and the acknowledgement constant $c_{\rm ack}$ can be determined
+in advance for the HTTP protocol in use, so by retrospectively
+looking at the file-transfer statistics after the first 32 or
+so transfers, one can determine the unknown head-of-line latency
+$H_j$.
+
+$H_j(D_j)$ in principle consists of a TCP-packet-reordering
+term and a term that reflects waiting to get a queue slot. The
+first term is small compared with the size-dependent term for
+HTTP 1.1 and HTTP 2 and very small for UDP-based HTTP 3. Moreover,
+this part of the blocking delay is implicitly included to some
+extent in the protocol-dependent acknowledgement constant. The
+second, queue-block, term is zero for the several files to be
+served on an unloaded server, but dominates the total file service
+term above some server-dependent critical value $D_{{\rm crit}_j}$
+which reflects both server policy and overall server load at time
+of request. If we look for a jump in $H_j$ versus queue depth,
+we can determine the critical depth above which the server waits
+for an open slot.
+
+## Queue Depth is Sugary but Toxic
+
+The easiest possible high-performance queueing algorithm is
+to simply put every job in a remote queue and let the server
+handle it. But that is also a poor algorithm for multiple
+reasons. First, if there is more than one server for the
+files, differing file sizes and server latencies will result
+in the queueing equivalent of
+[Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law),
+an "overhang" where one server still has many files queued up to
+serve while others have completed all requests.
+
+Moreover, if a server decides you are abusing its queue policies,
+it may take action that hurts your current and future downloads.
+Most public-facing servers have policies to recognize and defend
+against Denial-Of-Service (DOS) attacks and a large number of
+requests from a single IP address in a short
+time is the main hallmark of a DOS attack. The minimal response
+to a DOS event causes the server to dump your latest requests,
+a minor nuisance. Worse is if the server responds by severely
+throttling further requests from your IP address for hours
 or sometime days. Worst of all, your IP address can get the "death
 penalty" and be put on a permanent blacklist that may require manual
-intervention for removal. You generally don't know thThe simplest
-possibility of le trigger levels for these policies. Blacklisting
-might not even be your personal fault, but a collective problem.
-I have seen a practical class of 20 students brought to a complete
-halt by a server's 24-hour black-listing of the institution's
-public IP address.
+intervention for removal. Blacklisting might not even be your personal
+fault, but a collective problem. I have seen a practical class of 20
+students brought to a complete halt by a server's 24-hour blacklisting
+of the institution's public IP address. Until methods are developed
+for servers to publish their "play-friendly" values and whitelist
+known-friendly servers, the highest priority for downloading
+algorithms must be to **avoid blacklisting by a server by minimizing
+queue depth**. However, the absolute minimum queue depth is
+retreating back to synchronous downloading. How can we balance
+the competing demands of speed and avoiding blacklisting?
 
 ## Fishing Theory
 
@@ -131,25 +184,31 @@ that while the rate of catching fishes can vary from day to
 day--fish might be hungry or not--the average size of your
 catch is pretty stable. Bigger ponds tend to have bigger fish
 in them, and it might take slightly longer to reel in a bigger
-crappie than a small one, but big and small averages out to
-that pond.
+crappie than a small one, but big and small crappies average
+out pretty quickly.
 
-Then one day you decide you love fishing so much, you drive
+One day you decide you love fishing so much, you drive
 to the coast and charter a fishing boat. On that boat,
 you can set out as many lines as you want (up to some limit)
-and fish in parallel. At first, you seem to be catching the
-ocean-going equivalent of crappies, small bony fishes. But
-then you hook a small shark, which not only takes a lot of
-your time and attention to reel in, but which totally skews
-your estimate of average weight of your catch. You know that
-if you can catch a small shark, then maybe if you fish for
-long enough you might catch a big shark, or even a small whale.
-But you and your crew can only effecively reel in so
-many hooked lines at once. Putting out more lines than
-that effective limit of hooked- plus waiting-to-be-hooked
+and fish in parallel. At first, you catch small bony fishes
+that are the ocean-going equivalent of crappies. But
+eventually you hook a small shark. Not does it take a lot of
+your time and attention to reel in a shark, but a landing
+a single shark totally skews the average weight of your catch.
+If you catch a small shark, then if you fish for long enough
+you will probably catch a big shark. Maybe you might even
+hook a small whale. But you and your crew can only effecively
+reel in so many hooked lines at once. Putting out more lines than
+that effective limit of hooked plus waiting-to-be-hooked
 lines only results in fishes waiting on the line, when they
 may break the line or get partly eaten before you can reel
-them in.
+them in. Our theory of fishing says to put out lines
+at a high-side estimate of the most probable rate of catching
+fish until you reach the maximum number of lines the boat
+allows or until you catch enough fish to be able to estimate
+how the fish are biting. Then you back off the number
+of lines to the number that you and your crew can handle
+at a time that day.
 
 ## Adaptilastic Queueing
 
@@ -160,14 +219,31 @@ The basis of edaptilastic queueing is setting the total
 request-queue depth, across all servers, just high enough
 to saturate the total downloading bit rate. On startup,
 _flardl_ launches requests at all servers the most-likely
-per-file rate at saturation, up to some maximum permissible
-per-server queue depth $D_{\rm max_{i}}$ (set either by guess or
-by previous knowledge of individual servers). As transfers are
-completed, _flardl_ estimates the depth at which saturation
-was achieved (totalled over all servers), and updates its
-estimate of the achievable line bit rate and the most-likely
-per-file return rate on a per-server basis. These values form
-the bases for launching the remaining requests. The servers
+per-file rate at saturation, up to some maximum total
+per-server queue depth $D_{\rm tot}}$ (set either by guess or
+by previous knowledge of individual servers). That most-likely
+per-file rate is the rate at which a modal-size file gets
+transmitted at the saturated maximum permissible bit rate,
+achieved at saturation across an unknown number of requests.
+The expectation value of that initial rate is
+
+$$
+    k_{\rm init} = S^{\prime} B_{\rm max} / D_j
+$$
+
+where
+
+- $S^{\prime}$ is the modal file size for the collection,
+- $B_{\rm max}$ is the maximum permitted download rate,
+- and $D_j$ is the server queue depth at launch.
+
+As transfers are completed, _flardl_ estimates the queue
+depth at which saturation was achieved (totalled over all
+servers), and updates its estimate of $B_{\rm eff}$ over
+all servers at saturation from the network interface
+statistics and the critical queue depth and modal
+per-file return rate on a per-server basis. These values
+form the bases for launching the remaining requests. The servers
 with higher modal service rates (i.e., rates of serving
 crappies) will spend less time waiting and thus stand a better
 chance at nabbing an open queue slot, without penalizing servers
