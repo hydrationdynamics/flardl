@@ -1,5 +1,4 @@
-furo==2023.7.26
-sphinx==7.1.2
-myst_parser==2.0.0
-numpy==1.25.2
-linkify-it-py==2.0.2
+furo
+sphinx
+myst_parser
+linkify-it-py

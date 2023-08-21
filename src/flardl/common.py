@@ -1,4 +1,5 @@
 """Shared constants, parameters, and routines."""
+
 from time import time
 from typing import Optional
 from typing import Union
@@ -41,6 +42,7 @@ RANDOM_SEED = 87507
 DEFAULT_ZIPF_EXPONENT = 1.5  # more divergent as it gets closer to 1
 DEFAULT_ZIPF_SCALE = 1000
 DEFAULT_ZIPF_MIN = 1024
+# types
 NUMERIC_TYPE = Union[int, float]
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]

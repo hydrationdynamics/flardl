@@ -39,11 +39,11 @@ SERVER_DEFS = [
         "ftp.ebi.ac.uk",
         dir="pub/databases/pdb/data",
     ),
-    ServerDef(
-        "jp",
-        "files.pdbj.org",
-        dir="pub/pdb/data",
-    ),
+    # ServerDef(
+    #    "jp",
+    #    "files.pdbj.org",
+    #    dir="pub/pdb/data",
+    # ),
 ]
 
 
