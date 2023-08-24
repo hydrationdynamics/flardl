@@ -148,7 +148,7 @@ where
      \array{
          0, & D_j < D_{{\rm crit}_j} \cr
         I_i -
-          F_{i^{\prime}-(D_j-D_{{\rm crit}_j}+1)},
+          F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
           & D_j \ge D_{{\rm crit}_j} \cr
       }
   $$
@@ -254,7 +254,7 @@ request-queue depth, across all servers, just high enough
 to saturate the total downloading bit rate. On startup,
 _flardl_ launches requests at all servers the most-likely
 per-file rate at saturation, up to some maximum
-total-over-all-servers queue depth $D_{\rm tot}}$ (set either by guess or
+total-over-all-servers queue depth $D_{\rm tot}$ (set either by guess or
 by previous knowledge of individual servers). That most-likely
 per-file rate is the rate at which a modal-size file gets
 transmitted at the saturated maximum permissible bit rate,
