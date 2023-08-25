@@ -1,5 +1,4 @@
 """Downloads as a MultiDispatcher worker class."""
-
 import pathlib
 import sys
 from typing import Any
@@ -52,6 +51,7 @@ class StreamWorker:
         self.timeout_factor = timeout_factor
         # initialize internal parameters
         self.work_qty_name = "bytes"
+        self.launch_rate = 0.0
         self.n_soft_fails = 0
         self.n_hard_fails = 0
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = ()

@@ -273,7 +273,7 @@ class StreamStats(UserDict):
             ret_dict[key] = self[key].get(VALUE, worker=worker)
         return ret_dict
 
-    def report_worker_stats(self) -> dict[str, dict[Optional[str], Any]]:
+    def report_worker_stats(self) -> dict[str, Any]:
         """Return per-worker stats."""
         ret_dict = {}
         for worker in self.workers:

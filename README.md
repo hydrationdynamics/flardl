@@ -159,19 +159,13 @@ where
   expression becomes indeterminate, but with an expectation
   value of a multiple of the most-common file service time.
 
-At queue depths small enough that $H_{ij}$ is zero, this expression
-is linear in file size with the intercept given by the service
+At queue depths small enough that no time is spent waiting to
+get to the head of the line, the file transfer time is linear
+in file size with the intercept given by the service
 latency and slope governed by an expression whose only unknown is
-a near-constant related to acknowledgements. At low queue
-depths, one can fit to this expression to estimate the server
-latency $L_j$, the limiting download bit rate at saturation
-$B_{\rm lim}$, and the total queue depth at saturation
-$D_{\rm sat}$. If the server queue depth $D_j$ is run up high
-enough during the initial latency period before files are returned,
-one can estimate the critical queue depth $D_{{\rm crit}_j}$ by
-noting where the deviations approach a multiple of the modal
-transfer time. This estimate of critical queue depth reflects
-both server policy and overall server load at time of request.
+a near-constant related to acknowledgements. As queue depth
+increases, transfer times are dominated by time spent waiting
+to get to the head of the queue.
 
 ### Queue Depth--Attractive but Toxic
 
@@ -247,11 +241,35 @@ at a time that day.
 ### Adaptilastic Queueing
 
 _Flardl_ implements a method I call "adaptilastic"
-queueing to deliver robust performance in real situations,
-while being simple enough to be easily understood and coded.
-The basis of edaptilastic queueing is setting the total
-request-queue depth, across all servers, just high enough
-to saturate the total downloading bit rate. On startup,
+queueing to deliver robust performance in real situations.
+Adaptilastic queueing uses timing on transfers from an initial
+period--launched using optimistic assumptions--to
+optimize later transfers by using the minimum depths on each
+queue that will plateau the download bit rate. This scheme
+makes for several different operating regimes:
+
+- **Naive**, where no transfers have ever been completed
+  on a given server,
+- **Informed**, where information from a previous run
+  is available.
+- **Arrived**, where informaiton from at least one transfer
+  to at least one server has occurred.
+- **Updated**, where a sufficient number of transfers has
+  occurred to a server that file transfers may be
+  characterized.
+
+At low queue
+depths, one can fit to this expression to estimate the server
+latency $L_j$, the limiting download bit rate at saturation
+$B_{\rm lim}$, and the total queue depth at saturation
+$D_{\rm sat}$. If the server queue depth $D_j$ is run up high
+enough during the initial latency period before files are returned,
+one can estimate the critical queue depth $D_{{\rm crit}_j}$ by
+noting where the deviations approach a multiple of the modal
+transfer time. This estimate of critical queue depth reflects
+both server policy and overall server load at time of request.
+
+On startup,
 _flardl_ launches requests at all servers the most-likely
 per-file rate at saturation, up to some maximum
 total-over-all-servers queue depth $D_{\rm tot}$ (set either by guess or

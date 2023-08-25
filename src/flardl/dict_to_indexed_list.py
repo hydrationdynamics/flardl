@@ -20,8 +20,7 @@ class NonStringIterable(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __iter__(self):
         """Fake iteration."""
-        while False:
-            yield None
+        yield None
 
     @classmethod
     def __subclasshook__(cls, c):
@@ -30,7 +29,7 @@ class NonStringIterable(metaclass=abc.ABCMeta):
             if issubclass(c, str):
                 return False
 
-            return cabc._check_methods(c, "__iter__")
+            return cabc._check_methods(c, "__iter__")  # type: ignore
         return NotImplemented
 
 
