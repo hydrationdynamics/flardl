@@ -44,6 +44,7 @@ DEFAULT_ZIPF_EXPONENT = 1.5  # more divergent as it gets closer to 1
 DEFAULT_ZIPF_SCALE = 1000
 DEFAULT_ZIPF_MIN = 1024
 # types
+LOGMSG_TYPE = Union[str, Exception]
 NUMERIC_TYPE = Union[int, float]
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
@@ -53,15 +54,15 @@ SIMPLE_TYPES = Union[int, float, bool, str, None]
 class Logger(Protocol):
     """Protocol for logger implementing standard levels."""
 
-    def error(self, message: str | Exception):
+    def error(self, message: LOGMSG_TYPE):
         """Error level."""
         ...
 
-    def info(self, message: str | Exception):
+    def info(self, message: LOGMSG_TYPE):
         """Info level."""
         ...
 
-    def warning(self, message: str | Exception):
+    def warning(self, message: LOGMSG_TYPE):
         """Warning level."""
         ...
 
