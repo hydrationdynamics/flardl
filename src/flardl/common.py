@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Optional
+from typing import Protocol
 from typing import Union
 
 # third-party imports
@@ -47,6 +48,22 @@ NUMERIC_TYPE = Union[int, float]
 OPTIONAL_NUMERIC = Optional[NUMERIC_TYPE]
 OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
 SIMPLE_TYPES = Union[int, float, bool, str, None]
+
+
+class Logger(Protocol):
+    """Protocol for logger implementing standard levels."""
+
+    def error(self, message: str | Exception):
+        """Error level."""
+        ...
+
+    def info(self, message: str | Exception):
+        """Info level."""
+        ...
+
+    def warning(self, message: str | Exception):
+        """Warning level."""
+        ...
 
 
 class RandomValueGenerator:

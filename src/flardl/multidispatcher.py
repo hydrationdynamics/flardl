@@ -1,19 +1,18 @@
 """Dispatch work to multiple workers and collect results via AnyIO streams."""
 
+import logging
 import sys
-from typing import Any
 from typing import Optional
 from typing import Union
 
 # third-party imports
 import anyio
 import httpx
-import loguru
-from loguru import logger as mylogger
 
 from .common import DEFAULT_MAX_RETRIES
 from .common import INDEX_KEY
 from .common import SIMPLE_TYPES
+from .common import Logger
 from .common import MillisecondTimer
 from .dict_to_indexed_list import NonStringIterable
 from .dict_to_indexed_list import zip_dict_to_indexed_list
@@ -35,7 +34,7 @@ class MultiDispatcher:
         /,
         worker_list: Optional[list[str]] = None,
         max_retries: int = DEFAULT_MAX_RETRIES,
-        logger: Optional["loguru.Logger"] = None,
+        logger: Optional[Logger] = None,
         quiet: bool = False,
         history_len: int = 0,
         output_dir: Optional[str] = None,
@@ -43,8 +42,9 @@ class MultiDispatcher:
         runner: str = "production",
     ) -> None:
         """Save list of dispatchers."""
+        self._logger: Logger
         if logger is None:
-            self._logger = mylogger
+            self._logger = logging.getLogger(__name__)  # type: ignore
         else:
             self._logger = logger
         all_worker_names = [w.name for w in all_worker_defs]

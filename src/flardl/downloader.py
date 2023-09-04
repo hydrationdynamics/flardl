@@ -8,15 +8,18 @@ from typing import Union
 # third-party imports
 import anyio
 import httpx
-import loguru
 
 # module imports
 from .common import INDEX_KEY
 from .common import SIMPLE_TYPES
+from .common import Logger
 from .common import RandomValueGenerator
 from .instrumented_streams import ArgumentStream
 from .instrumented_streams import FailureStream
 from .instrumented_streams import ResultStream
+
+
+# import loguru
 
 
 class StreamWorker:
@@ -25,7 +28,7 @@ class StreamWorker:
     def __init__(
         self,
         worker_no: int,
-        logger: "loguru.Logger",
+        logger: Logger,
         output_dir: Optional[str],
         quiet: bool,
         /,
@@ -121,7 +124,6 @@ class StreamWorker:
     async def unhandled_exception_handler(self, index: int, error: Exception):
         """Handle unhandled exceptions."""
         self._logger.error(error)
-        await self._logger.complete()
         sys.exit(1)
 
     async def soft_exception_handler(

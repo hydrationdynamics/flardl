@@ -34,6 +34,8 @@ class ArgumentStream:
         timer: MillisecondTimer,
     ):
         """Initialize data structure for in-flight stats."""
+        self.send_stream: anyio.streams.memory.MemoryObjectSendStream
+        self.receive_stream: anyio.streams.memory.MemoryObjectReceiveStream
         self.send_stream, self.receive_stream = anyio.create_memory_object_stream(
             max_buffer_size=math.inf
         )
@@ -93,6 +95,8 @@ class FailureStream:
         in_process: dict[str, Any],
     ) -> None:
         """Init stats for queue."""
+        self.send_stream: anyio.streams.memory.MemoryObjectSendStream
+        self.receive_stream: anyio.streams.memory.MemoryObjectReceiveStream
         self.send_stream, self.receive_stream = anyio.create_memory_object_stream(
             max_buffer_size=math.inf
         )
