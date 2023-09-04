@@ -7,8 +7,6 @@ import os
 from pathlib import Path
 from typing import Callable
 
-import loguru
-
 
 NO_LEVEL_BELOW = 100
 
@@ -39,10 +37,3 @@ def print_docstring() -> Callable:
         return wrapper
 
     return decorator
-
-
-def stderr_format_func(record: loguru.Record) -> str:
-    """Do level-sensitive formatting."""
-    if record["level"].no < NO_LEVEL_BELOW:
-        return "<level>{message}</level>\n"
-    return "<level>{level}</level>: <level>{message}</level>\n"
