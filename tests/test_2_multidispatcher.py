@@ -1,9 +1,9 @@
 """Test multidispatcher function with mock downloader."""
 
+import logging
 import sys
 
 # third-party imports
-import loguru
 import pytest
 
 from flardl import INDEX_KEY
@@ -11,7 +11,6 @@ from flardl import MultiDispatcher
 from flardl import ServerDef
 
 from . import print_docstring
-from . import stderr_format_func
 
 
 ANYIO_BACKEND = "asyncio"
@@ -48,9 +47,7 @@ async def test_anyio_multidispatcher() -> None:
     max_retries = 2
     quiet = True
     server_list = ["aws", "us", "br"]
-    logger = loguru.logger
-    logger.remove()
-    logger.add(sys.stderr, format=stderr_format_func)
+    logger = logging.getLogger(__name__)
     runner = MultiDispatcher(
         SERVER_DEFS,
         worker_list=server_list,
@@ -77,13 +74,9 @@ def test_production_multidispatcher() -> None:
     max_retries = 2
     quiet = True
     server_list = ["aws", "us", "br"]
-    logger = loguru.logger
-    logger.remove()
-    logger.add(sys.stderr, format=stderr_format_func)
     runner = MultiDispatcher(
         SERVER_DEFS,
         worker_list=server_list,
-        logger=logger,
         max_retries=max_retries,
         quiet=quiet,
         output_dir="./tmp",

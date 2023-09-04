@@ -19,9 +19,6 @@ from .instrumented_streams import FailureStream
 from .instrumented_streams import ResultStream
 
 
-# import loguru
-
-
 class StreamWorker:
     """Basic worker functions."""
 

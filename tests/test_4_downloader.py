@@ -1,10 +1,10 @@
 """Test Downloads."""
 
+import logging
 import sys
 from pathlib import Path
 
 # third-party imports
-import loguru
 import pandas as pd
 import pytest
 
@@ -69,13 +69,9 @@ async def test_single_server_download(datadir_mgr) -> None:
         max_files = 5
         max_retries = 2
         server_list = ["aws"]
-        logger = loguru.logger
-        logger.remove()
-        logger.add(sys.stderr, format=stderr_format_func)
         runner = MultiDispatcher(
             SERVER_DEFS,
             worker_list=server_list,
-            logger=logger,
             max_retries=max_retries,
             quiet=True,
             output_dir="./downloads",
@@ -102,12 +98,8 @@ def test_bad_url(datadir_mgr) -> None:
             paths = [line.strip() for line in fp]
         max_files = 5
         max_retries = 2
-        logger = loguru.logger
-        logger.remove()
-        logger.add(sys.stderr, format=stderr_format_func)
         runner = MultiDispatcher(
             SERVER_DEFS,
-            logger=logger,
             max_retries=max_retries,
             quiet=True,
             output_dir="./downloads",
@@ -135,9 +127,6 @@ def test_bad_server_address(datadir_mgr) -> None:
             paths = [line.strip() for line in fp]
         max_files = 10
         max_retries = 2
-        logger = loguru.logger
-        logger.remove()
-        logger.add(sys.stderr, format=stderr_format_func)
         bad_servers = SERVER_DEFS + [
             ServerDef(
                 "bad",
@@ -146,7 +135,6 @@ def test_bad_server_address(datadir_mgr) -> None:
         ]
         runner = MultiDispatcher(
             bad_servers,
-            logger=logger,
             max_retries=max_retries,
             quiet=True,
             output_dir="./downloads",
@@ -173,12 +161,8 @@ def test_production_download(datadir_mgr) -> None:
             paths = [line.strip() for line in fp]
         max_files = -1
         max_retries = 2
-        logger = loguru.logger
-        logger.remove()
-        logger.add(sys.stderr, format=stderr_format_func)
         runner = MultiDispatcher(
             SERVER_DEFS,
-            logger=logger,
             max_retries=max_retries,
             quiet=True,
             output_dir="./downloads",
@@ -194,13 +178,13 @@ def test_production_download(datadir_mgr) -> None:
             print(f"\nResults:\n{results}")
             results.to_csv("results.tsv", sep="\t")
         else:
-            logger.error("No results!")
+            logging.error("No results!")
         if len(fail_list):
             failures = pd.DataFrame.from_dict(fail_list).set_index(INDEX_KEY)
             print(f"\nFailures:\n{failures}")
             failures.to_csv("failures.tsv", sep="\t")
         else:
-            logger.info("No failures.")
+            logging.info("No failures.")
         print("\nGlobal Stats:")
         for key, value in global_stats.items():
             print(f"   {key}: {value}")

@@ -40,7 +40,6 @@ python = ">=3.9,<3.13"
 anyio = ">=3.7.0"
 attrs = ">=22.2.0"
 httpx = {extras = ["http2"], version = ">=0.23.3"}
-loguru = ">=0.6.0"
 tqdm = ">=4.64.1"
 uvloop = { version = ">=0.17.0", markers = "sys_platform != 'win32'"}
 trio = ">=0.22.0"
