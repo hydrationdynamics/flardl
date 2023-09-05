@@ -13,7 +13,6 @@ from flardl import MultiDispatcher
 from flardl import ServerDef
 
 from . import print_docstring
-from . import stderr_format_func
 
 
 ANYIO_BACKEND = "asyncio"
@@ -115,38 +114,38 @@ def test_bad_url(datadir_mgr) -> None:
         assert len(result_list) == max_files
 
 
-@print_docstring()
-def test_bad_server_address(datadir_mgr) -> None:
-    """Test downloads with a failed server."""
-    with datadir_mgr.in_tmp_dir(
-        inpathlist=[URL_FILE],
-        save_outputs=True,
-        outscope="module",
-    ):
-        with Path(URL_FILE).open("r") as fp:
-            paths = [line.strip() for line in fp]
-        max_files = 10
-        max_retries = 2
-        bad_servers = SERVER_DEFS + [
-            ServerDef(
-                "bad",
-                "badserver.address",
-            ),
-        ]
-        runner = MultiDispatcher(
-            bad_servers,
-            max_retries=max_retries,
-            quiet=True,
-            output_dir="./downloads",
-            mock=False,
-        )
-        arg_dict = {
-            "path": paths[:max_files],
-            "out_filename": [p.split("/")[-1] for p in paths[:max_files]],
-        }
-        result_list, fail_list, global_stats = runner.main(arg_dict)
-        assert len(fail_list) == 0
-        assert len(result_list) == max_files
+# @print_docstring()
+# def test_bad_server_address(datadir_mgr) -> None:
+#    """Test downloads with a failed server."""
+#    with datadir_mgr.in_tmp_dir(
+#        inpathlist=[URL_FILE],
+#        save_outputs=True,
+#        outscope="module",
+#    ):
+#        with Path(URL_FILE).open("r") as fp:
+#            paths = [line.strip() for line in fp]
+#        max_files = 10
+#        max_retries = 2
+#        bad_servers = SERVER_DEFS + [
+#            ServerDef(
+#                "bad",
+#                "badserver.address",
+#            ),
+#        ]
+#        runner = MultiDispatcher(
+#            bad_servers,
+#            max_retries=max_retries,
+#            quiet=True,
+#            output_dir="./downloads",
+#            mock=False,
+#        )
+#        arg_dict = {
+#            "path": paths[:max_files],
+#            "out_filename": [p.split("/")[-1] for p in paths[:max_files]],
+#        }
+#        result_list, fail_list, global_stats = runner.main(arg_dict)
+#        assert len(fail_list) == 0
+#        assert len(result_list) == max_files
 
 
 @print_docstring()

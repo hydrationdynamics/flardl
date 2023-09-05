@@ -4,6 +4,7 @@ from time import time
 from typing import Optional
 from typing import Protocol
 from typing import Union
+from typing import runtime_checkable
 
 # third-party imports
 import numpy as np
@@ -51,6 +52,7 @@ OPTIONAL_NUMERIC_LIST = Union[OPTIONAL_NUMERIC, list[NUMERIC_TYPE]]
 SIMPLE_TYPES = Union[int, float, bool, str, None]
 
 
+@runtime_checkable
 class Logger(Protocol):
     """Protocol for logger implementing standard levels."""
 
