@@ -116,11 +116,9 @@ limitation to transfer rates, we can write the time required to
 receive file $i$ from server $j$ as approximately given by
 
 $$
-\begin{equation}
   t_{i} = F_i - I_i \approx L_j +
      (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
      H_{ij}(i, D_j, D_{{\rm crit}_j})
-\end{equation}
 $$
 
 where
@@ -271,7 +269,6 @@ from equation (1) in the case of small queue depths where
 the Head-Of-Line term is zero as
 
 $$
-\begin{equation}
     k_j = \array{
      \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \cr
      \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev},
@@ -280,7 +277,6 @@ $$
        & \text{if arriving,} \cr
      \tilde{\tau_j}, & \text{if updated,} \cr
     }
-\end{equation}
 $$
 
 where
