@@ -152,25 +152,26 @@ where
   [Head-Of-Line Latency](https://en.wikipedia.org/wiki/Head-of-line_blocking)
   that reflects waiting to get an active slot when the
   server queue depth $D_j$ is above some server-dependent
-  critical value $D_{{\rm crit}_j}$. If your downloading
-  process is the only one accessing the server, the
-  HOL latency can be quantified via the relation
+  critical value $D_{{\rm crit}_j}$.
 
-  $$
-    H_{ij} =
-     \array{
-         0, & D_j < D_{{\rm crit}_j} \cr
-        I_i -
-          F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
-          & D_j \ge D_{{\rm crit}_j} \cr
-      }
-  $$
+If your downloading process is the only one accessing the server,
+the Head-Of-Line latency can be quantified via the relation
 
-  where the prime in the subscript represents a re-indexing of
-  entries in order of end times rather than start times. If
-  other users are accessing the server at the same time, this
-  expression becomes indeterminate, but with an expectation
-  value of a multiple of the most-common file service time.
+$$
+  H_{ij} =
+   \array{
+       0, & D_j < D_{{\rm crit}_j} \cr
+      I_i -
+        F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
+        & D_j \ge D_{{\rm crit}_j} \cr
+    }
+$$
+
+where the prime in the subscript represents a re-indexing of
+entries in order of end times rather than start times. If
+other users are accessing the server at the same time, this
+expression becomes indeterminate, but with an expectation
+value of a multiple of the most-common file service time.
 
 At queue depths small enough that no time is spent waiting to
 get to the head of the line, the file transfer time is linear
@@ -276,10 +277,9 @@ among four different operating regimes:
   fully characterized.
 
 The optimistic rate at which _flardl_ launches requests for
-a given server $j$
-is given by the expectation rates for modal-sized files
-from the Equation of Time in the case of small queue depths
-where the Head-Of-Line term is zero as
+a given server $j$ is given by the expectation rates for
+modal-sized files from the Equation of Time in the case of small
+queue depths where the Head-Of-Line term is zero as
 
 $$
     k_j = \array{
