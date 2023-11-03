@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Internet :: WWW/HTTP",
 ]
 keywords = [
@@ -45,45 +46,91 @@ uvloop = { version = ">=0.17.0", markers = "sys_platform != 'win32'"}
 trio = ">=0.22.0"
 psutil = ">=5.9.5"
 
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
-Pygments = ">=2.10.0"
+nox = ">=2021.6.6"
+
+
+[tool.poetry.group.pre-commit]
+optional = true
+
+[tool.poetry.group.pre-commit.dependencies]
 bandit = ">=1.7.4"
 black = ">=23.7.0"
-coverage = {extras = ["toml"], version = ">=6.2"}
 flake8 = ">=4.0.1"
 flake8-bugbear = ">=21.9.2"
 flake8-docstrings = ">=1.6.0"
 flake8-rst-docstrings = ">=0.2.5"
-furo = ">=2021.11.12"
 isort = ">=5.10.1"
-mypy = ">=0.930"
-nox = ">=2021.6.6"
-nox-poetry = ">=0.9.0"
 pep8-naming = ">=0.12.1"
 pre-commit = ">=2.16.0"
 pre-commit-hooks = ">=4.1.0"
-pytest = ">=6.2.5"
 pyupgrade = ">=2.29.1"
-safety = ">=1.10.3"
-sphinx = ">=4.3.2"
-sphinx-autobuild = ">=2021.3.14"
-typeguard = ">=2.13.3"
-xdoctest = {extras = ["colors"], version = ">=0.15.10"}
-myst-parser = {version = ">=0.16.1"}
-# test deps for this package
-pandas = ">=1.4.0"
-pandas-stubs = ">=1.5.2.221124"
-pytest-datadir-mgr = ">1.3.1"
-pytest-trio = ">=0.8.0"
-numpy = ">=1.25.1"
-linkify-it-py = ">=2.0.2"
 
+[tool.poetry.group.analysis]
+optional = true
 
 [tool.poetry.group.analysis.dependencies]
 seaborn = ">=0.12.2"
 scipy = ">=1.11.1"
 typer = ">=0.9.0"
+
+[tool.poetry.group.safety]
+optional = true
+
+[tool.poetry.group.safety.dependencies]
+safety = ">=1.10.3"
+
+[tool.poetry.group.coverage]
+optional = true
+
+[tool.poetry.group.coverage.dependencies]
+coverage = {extras = ["toml"], version = "^6.2"}
+
+[tool.poetry.group.tests]
+optional = true
+
+[tool.poetry.group.tests.dependencies]
+hypothesis = ">=6.88.1"
+numpy = ">=1.25.1"
+Pygments = ">=2.10.0"
+pandas = ">=1.4.0"
+pandas-stubs = ">=1.5.2.221124"
+pytest = ">=6.2.5"
+pytest-datadir-mgr = ">1.3.1"
+pytest-trio = ">=0.8.0"
+
+[tool.poetry.group.mypy]
+optional = true
+
+[tool.poetry.group.mypy.dependencies]
+mypy = ">=0.930"
+
+[tool.poetry.group.typeguard]
+optional = true
+
+[tool.poetry.group.typeguard.dependencies]
+typeguard = "^2.13.0"
+
+[tool.poetry.group.xdoctest]
+optional = true
+
+[tool.poetry.group.xdoctest.dependencies]
+xdoctest = {extras = ["colors"], version = "^0.15.10"}
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+furo = ">=2021.11.12"
+linkify-it-py = ">=2.0.2"
+myst-parser = {version = ">=0.16.1"}
+numpy = ">=1.25.1"
+sphinx = ">=4.3.0"
+sphinx-autobuild = ">=2021.3.14"
+sphinx-click = "^3.0.2"
 
 [tool.bandit]
 exclude_dirs = ["tests/", "noxfile.py", "analysis/"]
@@ -121,5 +168,5 @@ show_error_context = true
 addopts = ["-x"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.1.0a6"]
 build-backend = "poetry.core.masonry.api"
