@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flardl"
-version = "0.0.8"
+version = "0.0.8.1"
 description = "Adaptive Elastic Multi-Site Downloading"
 authors = ["Joel Berendzen <joel@generisbio.com>"]
 license = "BSD-3-Clause"
