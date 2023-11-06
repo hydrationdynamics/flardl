@@ -3,6 +3,7 @@
 import math
 from collections import Counter
 from typing import Any
+from typing import ClassVar
 from typing import Union
 from typing import cast
 
@@ -88,7 +89,7 @@ class ArgumentStream:
 class FailureStream:
     """Anyio stream to track failures."""
 
-    launch_stats_out: list[str] = []
+    launch_stats_out: ClassVar = []
 
     def __init__(
         self,
@@ -136,4 +137,4 @@ class FailureStream:
 class ResultStream(FailureStream):
     """Stream for results."""
 
-    launch_stats_out = [LAUNCH_KEY]
+    launch_stats_out: ClassVar = [LAUNCH_KEY]

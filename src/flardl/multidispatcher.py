@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from contextlib import suppress
 from typing import Optional
 from typing import Union
 
@@ -68,7 +69,7 @@ class MultiDispatcher:
                 worker = worker_factory(
                     i, self._logger, output_dir, quiet, **worker_def.get_all()  # type: ignore
                 )
-            except Exception as e:
+            except Exception as e: # noqa: BLE001
                 self._logger.warning(f"Worker {worker_def.name} failed to initialize.")
                 self._logger.warning(e)
                 continue
@@ -132,7 +133,7 @@ class MultiDispatcher:
         }
         return results, fails, stats
 
-    async def dispatcher(  # noqa: C901
+    async def dispatcher(
         self,
         worker,
         arg_q: ArgumentStream,
@@ -148,10 +149,8 @@ class MultiDispatcher:
                 return
             if worker_count > 0:
                 # Do rate limiting, if a limiter is found in worker.
-                try:
+                with suppress(AttributeError): # okay if worker has no limiter
                     await worker.limiter()
-                except AttributeError:
-                    pass  # it's okay if worker didn't have a limiter
             # Do the work and handle any exceptions encountered.
             try:
                 await worker.worker(result_q, worker_count, **kwargs)
@@ -187,7 +186,7 @@ class MultiDispatcher:
                     arg_q,
                 )
                 return
-            except Exception as e:
+            except Exception as e: # noqa: BLE001
                 # unhandled errors go to unhandled exception handler
                 idx = kwargs[INDEX_KEY]
                 await worker.unhandled_exception_handler(idx, e)

@@ -1,7 +1,9 @@
 """Simple stream-associated statistical functions."""
+import contextlib
 from collections import UserDict
 from collections import deque
 from typing import Any
+from typing import ClassVar
 from typing import Optional
 from typing import TypeVar
 from typing import Union
@@ -19,7 +21,7 @@ from .common import MAX
 from .common import NUMERIC_TYPE
 from .common import RAVG
 from .common import STAT_SUBLABELS
-from .common import SUM
+from .common import TOTAL
 from .common import VALUE
 
 
@@ -34,8 +36,9 @@ U = TypeVar("U")
 
 def _nn(inst: Optional[U]) -> U:
     """Not-none helper to pass mypy."""
-    assert inst is not None
-    return inst
+    if inst is not None:
+        return inst
+    raise TypeError
 
 
 def _round(val: NUMERIC_TYPE, rounding: int) -> NUMERIC_TYPE:
@@ -48,24 +51,25 @@ def _round(val: NUMERIC_TYPE, rounding: int) -> NUMERIC_TYPE:
 
 def _set_stat(instance: StatType, attrib: Attribute, val: NUMERIC_TYPE) -> NUMERIC_TYPE:
     """Round stat value and set derived quantities."""
-    _unused = (attrib,)  # noqa: F841
-    rounded_val = _round(val, instance._rounding)
+    _unused = (attrib,)
+    rounded_val = _round(val, instance.rounding)
     instance.n_obs += 1
     if instance.value is None:
-        instance.min = rounded_val
-        instance.max = rounded_val
-        instance.sum = rounded_val
+        instance.minimum = rounded_val
+        instance.maximum = rounded_val
+        instance.total = rounded_val
         instance.avg = rounded_val
     else:
-        assert instance.min is not None
-        instance.min = min(rounded_val, _nn(instance.min))
-        instance.max = max(rounded_val, _nn(instance.max))
-        instance.sum = _round(_nn(instance.sum) + rounded_val, instance._rounding)
-        instance.avg = _round(_nn(instance.sum) / instance.n_obs, instance._rounding)
-    instance._history.append(rounded_val)
-    if instance._history_len > 0 and len(instance._history) == instance._history_len:
+        if instance.minimum is None:
+            raise TypeError
+        instance.minimum = min(rounded_val, _nn(instance.minimum))
+        instance.maximum = max(rounded_val, _nn(instance.maximum))
+        instance.total = _round(_nn(instance.total) + rounded_val, instance.rounding)
+        instance.avg = _round(_nn(instance.total) / instance.n_obs, instance.rounding)
+    instance.history.append(rounded_val)
+    if instance.history_len > 0 and len(instance.history) == instance.history_len:
         instance.r_avg = _round(
-            float(sum(instance._history)) / instance._history_len, instance._rounding
+            float(sum(instance.history)) / instance.history_len, instance.rounding
         )
     return rounded_val
 
@@ -74,31 +78,30 @@ def _set_stat(instance: StatType, attrib: Attribute, val: NUMERIC_TYPE) -> NUMER
 class Stat:
     """Class of derived statistics on numeric value."""
 
-    _history_len: int = field(default=0, repr=False)
-    _rounding: int = field(default=DEFAULT_ROUNDING, repr=False)
+    history_len: int = field(default=0, repr=False)
+    rounding: int = field(default=DEFAULT_ROUNDING, repr=False)
     value: OPTIONAL_NUMERIC = field(default=None, on_setattr=_set_stat)
-    sum: OPTIONAL_NUMERIC = None
+    total: OPTIONAL_NUMERIC = None
     n_obs: int = 0
     avg: OPTIONAL_NUMERIC = None
-    min: OPTIONAL_NUMERIC = None
-    max: OPTIONAL_NUMERIC = None
-    _history: deque[NUMERIC_TYPE] = field(init=False, repr=False)
+    minimum: OPTIONAL_NUMERIC = None
+    maximum: OPTIONAL_NUMERIC = None
+    history: deque[NUMERIC_TYPE] = field(init=False, repr=False)
     r_avg: OPTIONAL_NUMERIC = None
 
     def __attrs_post_init__(self):
         """Initialize history after history length is set."""
-        self._history = deque(maxlen=self._history_len)
+        self.history = deque(maxlen=self.history_len)
 
     def get(self, key: str = VALUE) -> OPTIONAL_NUMERIC_LIST:
         """Return value of attribute."""
         if key is HIST:
-            if self._history_len > 0 and len(self._history) == self._history_len:
-                return list(self._history)
-            else:
+            if self.history_len > 0 and len(self.history) == self.history_len:
+                return list(self.history)
+            else: # noqa: RET505
                 return None
-        return asdict(self, filter=lambda attr, value: not attr.name.startswith("_"))[
-            key
-        ]
+        return asdict(self, filter=lambda attr, value: # noqa: ARG005
+                      not attr.name.startswith("_"))[key]
 
 
 class WorkerStat(UserDict):
@@ -123,7 +126,7 @@ class WorkerStat(UserDict):
         """String of the overall stats."""
         return str(self[ALL])
 
-    def set(
+    def set_value(
         self, value: NUMERIC_TYPE, worker: str = ALL, set_global: bool = True
     ) -> None:
         """Set value for a worker."""
@@ -141,6 +144,7 @@ class WorkerStat(UserDict):
         rounding: Optional[int] = None,
     ) -> OPTIONAL_NUMERIC_LIST:
         """Get stat for a worker."""
+        _unused = (default, )
         retval = self[worker].get(key)
         if scale is not None:
             retval *= scale
@@ -172,7 +176,7 @@ class ReportData:
 class StreamStats(UserDict):
     """Dictionary of per-worker queue stats with update calculations."""
 
-    stat_data = {
+    stat_data: ClassVar = {
         "retirement_t": StatData("retirement time, ms", rounding=2),
         "launch_t": StatData("launch time, ms", rounding=2),
         "service_t": StatData("service time, ns", rounding=2),
@@ -180,7 +184,7 @@ class StreamStats(UserDict):
         "dl_rate": StatData("per-file download rate, /s", rounding=1),
         "cum_rate": StatData("download rate, Mbit/s", rounding=0),
     }
-    worker_stats = [
+    worker_stats: ClassVar = [
         ReportData(
             "retirement_t",
             VALUE,
@@ -192,19 +196,19 @@ class StreamStats(UserDict):
         ReportData("dl_rate", MAX),
         ReportData(
             "bytes",
-            SUM,
+            TOTAL,
             scale=1 / 1024.0 / 1024.0,
             rounding=1,
             label="Total MB downloaded",
         ),
     ]
-    file_stats = [
+    file_stats: ClassVar = [
         ReportData("retirement_t", VALUE),
         ReportData("launch_t", VALUE),
         ReportData("service_t", VALUE),
         ReportData("bytes", VALUE),
     ]
-    diagnostic_stats = [
+    diagnostic_stats: ClassVar = [
         ReportData("dl_rate", RAVG),
     ]
 
@@ -244,17 +248,17 @@ class StreamStats(UserDict):
                 if k not in self:
                     continue
                 if not isinstance(v, WorkerStat):
-                    self[k].set(v, worker=worker)
+                    self[k].set_value(v, worker=worker)
                     pop_list.append(k)
-            [input_dict.pop(k) for k in pop_list]  # noqa: W0106
+            [input_dict.pop(k) for k in pop_list]
             super().update(input_dict)
         else:
             super().update(*args)
         self.calculate_updates(worker=worker)
 
-    def globals(self) -> dict[str, OPTIONAL_NUMERIC]:
+    def global_stats(self) -> dict[str, OPTIONAL_NUMERIC]:
         """Return global stats."""
-        ret_dict: dict[str, OPTIONAL_NUMERIC] = {}
+        ret_dict = {}
         for key in self:
             if not self[key].is_global_stat:
                 continue
@@ -320,17 +324,15 @@ class StreamStats(UserDict):
     ):
         """Calculate all derived values."""
         # service_t
-        try:
-            self["service_t"].set(
+        with contextlib.suppress(TypeError):
+            self["service_t"].set_value(
                 self["retirement_t"].get(VALUE, worker)
                 - self["launch_t"].get(VALUE, worker),
                 worker,
             )
-        except TypeError:
-            pass
         # dl_rate
         try:
-            self["dl_rate"].set(
+            self["dl_rate"].set_value(
                 self["bytes"].get(VALUE, worker)
                 * 1000.0
                 / 1024.0
@@ -340,7 +342,7 @@ class StreamStats(UserDict):
                 set_global=False,
             )
             # update global value
-            self["dl_rate"].set(
+            self["dl_rate"].set_value(
                 self["bytes"].get(VALUE)
                 * 1000.0
                 / 1024.0
@@ -351,8 +353,8 @@ class StreamStats(UserDict):
             pass
         # cum_rate
         try:
-            self["cum_rate"].set(
-                self["bytes"].get(SUM, worker)
+            self["cum_rate"].set_value(
+                self["bytes"].get(TOTAL, worker)
                 * BYTES_TO_MEGABITS
                 * 1000.0
                 / self["retirement_t"].get(VALUE, worker),
@@ -360,8 +362,8 @@ class StreamStats(UserDict):
                 set_global=False,
             )
             # now update value for all workers
-            self["cum_rate"].set(
-                self["bytes"].get(SUM)
+            self["cum_rate"].set_value(
+                self["bytes"].get(TOTAL)
                 * BYTES_TO_MEGABITS
                 * 1000.0
                 / self["retirement_t"].get(VALUE)

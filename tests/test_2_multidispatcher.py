@@ -1,12 +1,10 @@
 """Test multidispatcher function with mock downloader."""
 
 import logging
-import sys
 
 # third-party imports
 import pytest
 
-from flardl import INDEX_KEY
 from flardl import MultiDispatcher
 from flardl import ServerDef
 
@@ -19,28 +17,28 @@ SERVER_DEFS = [
     ServerDef(
         "aws",
         "s3.rcsb.org",
-        dir="pub/pdb/data",
+        server_dir="pub/pdb/data",
     ),
     ServerDef(
         "us",
         "files.rcsb.org",
-        dir="pub/pdb/data",
+        server_dir="pub/pdb/data",
     ),
     ServerDef(
         "br",
         "bmrb.io",
-        dir="ftp/pub/pdb/data",
+        server_dir="ftp/pub/pdb/data",
     ),
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def anyio_backend():
     """Select backend for testing."""
     return ANYIO_BACKEND
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_anyio_multidispatcher() -> None:
     """Test multidispatcher."""
     n_items = 100

@@ -1,5 +1,4 @@
 """Define server attributes."""
-from typing import Optional
 
 from attrs import asdict
 from attrs import define
@@ -16,7 +15,7 @@ class ServerDef:
 
     name: str
     server: str
-    dir: str = ""
+    server_dir: str = ""
     transport: str = "https"
     transport_ver: str = "1"
     bw_limit_mbps: float = 0.0
@@ -25,4 +24,4 @@ class ServerDef:
 
     def get_all(self) -> dict[str, SIMPLE_TYPES]:
         """Return dictionary of non-private attributes."""
-        return asdict(self, filter=lambda attr, value: not attr.name.startswith("_"))
+        return asdict(self, filter=lambda attr, value: not attr.name.startswith("_")) # noqa: ARG005

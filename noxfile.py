@@ -111,7 +111,7 @@ def activate_virtualenv_in_precommit_hooks(session: nox.Session) -> None:
     Args:
         session: The Session object.
     """
-    assert session.bin is not None  # nosec
+    assert session.bin is not None  # noqa: S101
 
     # Only patch hooks containing a reference to this session's bindir. Support
     # quoting rules for Python and bash, but strip the outermost quotes so we

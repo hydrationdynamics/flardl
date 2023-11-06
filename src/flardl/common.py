@@ -16,20 +16,20 @@ ALL = "all"
 AVG = "avg"
 HIST = "history"
 INDEX_KEY = "idx"
-MAX = "max"
-MIN = "min"
+MAX = "maximum"
+MIN = "minimum"
 NOBS = "n_obs"
 RAVG = "r_avg"
-SUM = "sum"
+TOTAL = "total"
 VALUE = "value"
 
 # Pretty labels for substat names.
 STAT_SUBLABELS = {
     VALUE: "",
-    SUM: "total ",
+    TOTAL: "total ",
     AVG: "average ",
-    MIN: "min ",
-    MAX: "max ",
+    MIN: "minimum ",
+    MAX: "maximum ",
     NOBS: "# ",
     HIST: "history ",
     RAVG: "rolling average ",

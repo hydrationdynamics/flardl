@@ -1,7 +1,6 @@
 """Test Downloads."""
 
 import logging
-import sys
 from pathlib import Path
 
 # third-party imports
@@ -21,32 +20,32 @@ SERVER_DEFS = [
         "aws",
         "s3.rcsb.org",
         transport_ver="2",
-        dir="pub/pdb/data",
+        server_dir="pub/pdb/data",
     ),
     ServerDef(
         "us",
         "files.rcsb.org",
-        dir="pub/pdb/data",
+        server_dir="pub/pdb/data",
     ),
     ServerDef(
         "br",
         "bmrb.io",
-        dir="ftp/pub/pdb/data",
+        server_dir="ftp/pub/pdb/data",
     ),
     ServerDef(
         "uk",
         "ftp.ebi.ac.uk",
-        dir="pub/databases/pdb/data",
+        server_dir="pub/databases/pdb/data",
     ),
     # ServerDef(
     #    "jp",
     #    "files.pdbj.org",
-    #    dir="pub/pdb/data",
+    #    server_dir="pub/pdb/data",
     # ),
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def anyio_backend():
     """Select backend for testing."""
     return ANYIO_BACKEND
@@ -55,7 +54,7 @@ def anyio_backend():
 URL_FILE = "filepaths.txt"
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_single_server_download(datadir_mgr) -> None:
     """Test download from a single server."""
     with datadir_mgr.in_tmp_dir(

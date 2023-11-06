@@ -17,7 +17,7 @@ def test_clean_datadir(request):
 
 
 @print_docstring()
-def test_setup_datadir(request, datadir_mgr, capsys):
+def test_setup_datadir(request):
     """Copy in and download static data."""
     testdir = Path(request.fspath.dirpath())
     datadir = testdir / "data"

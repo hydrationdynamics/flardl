@@ -33,10 +33,7 @@ def main(
     df = pd.read_csv(input_tsv, sep="\t", index_col=0)
     lindata = df["size"]
     logdata = np.log10(lindata)
-    if logspace:
-        data = logdata
-    else:
-        data = lindata
+    data = logdata if logspace else lindata
     plt.rcParams.update({"font.size": 14})
     sns.histplot(
         data=data,

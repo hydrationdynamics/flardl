@@ -2,6 +2,7 @@
 import pathlib
 import sys
 from typing import Any
+from typing import ClassVar
 from typing import Optional
 from typing import Union
 
@@ -36,6 +37,7 @@ class StreamWorker:
         **kwargs,
     ):
         """Positional=common across workers, keyworded=individual."""
+        _unused = (kwargs,)
         self.worker_no = worker_no
         self.output_dir = output_dir
         self._logger = logger
@@ -120,6 +122,7 @@ class StreamWorker:
 
     async def unhandled_exception_handler(self, index: int, error: Exception):
         """Handle unhandled exceptions."""
+        _unused = (index,)
         self._logger.error(error)
         sys.exit(1)
 
@@ -140,7 +143,7 @@ class StreamWorker:
 class MockDownloader(StreamWorker):
     """Demonstrates multi-dispatch operation with logging."""
 
-    SOFT_FAILS = [2, 4]
+    SOFT_FAILS: ClassVar = [2, 4]
     RESCUE_SOFT_FAILS = (4,)
     HARD_FAILS = (
         6,
@@ -180,7 +183,7 @@ class MockDownloader(StreamWorker):
                 if idx in self.RESCUE_SOFT_FAILS:
                     self.SOFT_FAILS.remove(idx)
             raise ConnectionError(f"{self.name} aborted job {idx} (expected).")
-        elif idx in self.HARD_FAILS:
+        elif idx in self.HARD_FAILS: # noqa: RET506
             async with self._lock:
                 self.n_hard_fails += 1
             raise ValueError(f"Job {idx} failed on {self.name} (expected).")
@@ -209,7 +212,7 @@ class Downloader(StreamWorker):
         self,
         *args,
         server: str,
-        dir: str,
+        server_dir: str,
         transport: str,
         transport_ver: str,
         bw_limit_mbps: float,
@@ -218,6 +221,7 @@ class Downloader(StreamWorker):
         **super_kwargs,
     ):
         """Init with id number."""
+        _unused = (bw_limit_mbps, queue_depth, )
         super().__init__(*args, **super_kwargs)
         self.hard_exceptions: tuple[()] | tuple[type[BaseException]] = (
             httpx.HTTPStatusError,
@@ -225,8 +229,8 @@ class Downloader(StreamWorker):
         self.soft_exceptions: tuple[()] | tuple[type[BaseException]] = (ValueError,)
         self.launch_rate = self.LAUNCH_RATE_MAX
         self.base_url = transport + "://" + server + "/"
-        if dir != "":
-            self.base_url += dir + "/"
+        if server_dir != "":
+            self.base_url += server_dir + "/"
         if transport_ver == "2":
             self.http2 = True
         else:

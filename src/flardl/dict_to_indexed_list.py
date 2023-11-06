@@ -29,7 +29,7 @@ class NonStringIterable(metaclass=abc.ABCMeta):
             if issubclass(c, str):
                 return False
 
-            return cabc._check_methods(c, "__iter__")  # type: ignore
+            return cabc._check_methods(c, "__iter__")  # type: ignore # noqa: SLF001
         return NotImplemented
 
 
@@ -44,7 +44,7 @@ def zip_dict_to_indexed_list(
         *[cast(Iterable, arg_dict[k]) for k in iterable_args]
     ):
         args: dict[str, SIMPLE_TYPES] = {INDEX_KEY: idx}
-        for key in arg_dict.keys():
+        for key in arg_dict:
             if key in iterable_args:
                 args[key] = iter_tuple[iterable_args.index(key)]
             else:

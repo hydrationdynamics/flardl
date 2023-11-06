@@ -1,7 +1,7 @@
 """Sphinx configuration."""
 project = "Flardl"
 author = "Joel Berendzen"
-copyright = "2023, Joel Berendzen"
+copyright = "2023, Joel Berendzen"  # noqa: A001
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
