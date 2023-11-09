@@ -62,8 +62,6 @@ jobs:
           digest = hashlib.sha256(payload).hexdigest()
           result = "${{ runner.os }}-{}-{}-pre-commit".format(python, digest[:8])
 
-          print("::set-output name=result::{}".format(result))
-
       - name: Restore pre-commit cache
         uses: actions/cache@v3
         if: matrix.session == 'pre-commit'
@@ -100,7 +98,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install Poetry
         run: pipx install poetry
