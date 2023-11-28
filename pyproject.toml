@@ -64,11 +64,11 @@ typeguard = [
 docs = [
     "furo>=2023.9.10",
     "linkify-it-py>=2.0.2",
-    "myst>=1.0.4",
     "numpy>=1.26.1",
     "sphinx>=7.2.6",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-click>=5.0.1",
+    "myst-parser>=2.0.0",
 ]
 safety = [
     "safety>=2.3.5",
@@ -168,6 +168,12 @@ max-complexity = 10
 [tool.ruff.pydocstyle]
 convention = 'google'
 
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "nox>=2023.4.22",
+    "ruff>=0.1.6",
+]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
