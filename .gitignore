@@ -241,9 +241,6 @@ fabric.properties
 # pytest-datadir-mgr directory
 tests/data
 
-# hypothesis data
-.hypothesis/
-
 # temporary working dir
 tmp/
 

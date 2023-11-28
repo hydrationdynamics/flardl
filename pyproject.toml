@@ -137,9 +137,6 @@ parallel = true
 [tool.coverage.report]
 show_missing = true
 
-[tool.cruft]
-skip = ["src/*", "tests/*", "analysis/", "poetry.lock"]
-
 [tool.mypy]
 warn_unreachable = true
 pretty = true
