@@ -39,10 +39,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
-      - name: Install Poetry
-        run: |
-          pipx install poetry
-          poetry --version
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        run: pdm --version
 
       - name: Install Nox
         run: |
@@ -100,8 +99,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v3
+        run: pdm show --version
 
       - name: Install Nox
         run: |

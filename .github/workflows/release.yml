@@ -25,10 +25,9 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Install Poetry
-        run: |
-          pipx install poetry
-          poetry --version
+      - name: Install PDM
+        uses: pdm-project/setup-pdm@v3
+        run: pdm --version
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -41,18 +40,18 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2
         with:
           version-command: |
-            bash -o pipefail -c "poetry version | awk '{ print \$2 }'"
+            bash -o pipefail -c "pdm show --version"
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          #poetry version patch &&
+          version=$(pdm show --version}') &&
+          #poetry version $version.dev.$(date +%s)
 
       - name: Build package
         run: |
-          poetry build --ansi
+          pdm build
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
