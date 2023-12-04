@@ -41,13 +41,6 @@ jobs:
           version-command: |
             bash -o pipefail -c "pdm show --version"
 
-      - name: Bump version for developmental release
-        if: "! steps.check-version.outputs.tag"
-        run: |
-          #poetry version patch &&
-          version=$(pdm show --version}') &&
-          #poetry version $version.dev.$(date +%s)
-
       - name: Build package
         run: pdm build
 

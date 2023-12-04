@@ -41,7 +41,6 @@ jobs:
 
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v3
-        run: pdm --version
 
       - name: Install Nox
         run: |
