@@ -85,8 +85,8 @@ def coverage(session: nox.Session) -> None:
                        "-G", "coverage", external=True)
 
     if not session.posargs and any(Path().glob(".coverage.*")):
-        session.run("coverage", "combine")
-    session.run("coverage", *args)
+        session.run("pdm", "run", "coverage", "combine")
+    session.run("pdm", "run", "coverage", *args)
 
 
 @nox.session(python=python_versions)
