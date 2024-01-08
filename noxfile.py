@@ -50,8 +50,7 @@ def safety(session: nox.Session) -> None:
 def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src"]
-    session.run_always("pdm", "install", "-G", "tests",
-                       "-G", "mypy", external=True)
+    session.run_always("pdm", "install", "-G", "tests", "-G", "mypy", external=True)
     session.run("mypy", *args)
     if not session.posargs:
         session.run(
@@ -65,10 +64,18 @@ def mypy(session: nox.Session) -> None:
 @nox.session(python=python_versions)
 def tests(session: nox.Session) -> None:
     """Run the test suite."""
-    session.run_always("pdm", "install", "-G", "tests",
-                       "-G", "coverage", external=True)
+    session.run_always("pdm", "install", "-G", "tests", "-G", "coverage", external=True)
     try:
-        session.run("coverage", "run", "-m", "pytest", *session.posargs)
+        session.run(
+            "pdm",
+            "run",
+            "coverage",
+            "run",
+            "-m",
+            "pytest",
+            *session.posargs,
+            external=True,
+        )
         cov_path = Path(".coverage")
         if cov_path.exists():
             cov_path.rename(f".coverage.{random.randrange(100000)}")  # noqa: S311
@@ -81,19 +88,19 @@ def tests(session: nox.Session) -> None:
 def coverage(session: nox.Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
-    session.run_always("pdm", "install",
-                       "-G", "coverage", external=True)
+    session.run_always("pdm", "install", "-G", "coverage", external=True)
 
     if not session.posargs and any(Path().glob(".coverage.*")):
-        session.run("pdm", "run", "coverage", "combine")
-    session.run("pdm", "run", "coverage", *args)
+        session.run("pdm", "run", "coverage", "combine", external=True)
+    session.run("pdm", "run", "coverage", *args, external=True)
 
 
 @nox.session(python=python_versions)
 def typeguard(session: nox.Session) -> None:
     """Runtime type checking using Typeguard."""
-    session.run_always("pdm", "install", "-G", "tests",
-                       "-G", "typeguard", external=True)
+    session.run_always(
+        "pdm", "install", "-G", "tests", "-G", "typeguard", external=True
+    )
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 
@@ -106,8 +113,7 @@ def xdoctest(session: nox.Session) -> None:
         args = [f"--modname={package}", "--command=all"]
         if "FORCE_COLOR" in os.environ:
             args.append("--colored=1")
-    session.run_always("pdm", "install",
-                       "-G", "xdoctest", external=True)
+    session.run_always("pdm", "install", "-G", "xdoctest", external=True)
     session.run("python", "-m", "xdoctest", *args)
 
 
@@ -117,8 +123,7 @@ def docs_build(session: nox.Session) -> None:
     args = session.posargs or ["docs", "docs/_build"]
     if not session.posargs and "FORCE_COLOR" in os.environ:
         args.insert(0, "--color")
-    session.run_always("pdm", "install",
-                       "-G", "docs", external=True)
+    session.run_always("pdm", "install", "-G", "docs", external=True)
     build_dir = Path("docs", "_build")
     if build_dir.exists():
         shutil.rmtree(build_dir)
@@ -129,8 +134,7 @@ def docs_build(session: nox.Session) -> None:
 def docs(session: nox.Session) -> None:
     """Build and serve the documentation with live reloading on file changes."""
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
-    session.run_always("pdm", "install",
-                       "-G", "docs", external=True)
+    session.run_always("pdm", "install", "-G", "docs", external=True)
     build_dir = Path("docs", "_build")
     if build_dir.exists():
         shutil.rmtree(build_dir)
