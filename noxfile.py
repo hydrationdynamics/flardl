@@ -51,14 +51,7 @@ def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src"]
     session.run_always("pdm", "install", "-G", "tests", "-G", "mypy", external=True)
-    session.run("mypy", *args)
-    if not session.posargs:
-        session.run(
-            "mypy",
-            f"--python-executable={sys.executable}",
-            "--check-untyped-defs",
-            "noxfile.py",
-        )
+    session.run("mypy", "--check-untyped-defs", *args)
 
 
 @nox.session(python=python_versions)
@@ -67,14 +60,11 @@ def tests(session: nox.Session) -> None:
     session.run_always("pdm", "install", "-G", "tests", "-G", "coverage", external=True)
     try:
         session.run(
-            "pdm",
-            "run",
             "coverage",
             "run",
             "-m",
             "pytest",
             *session.posargs,
-            external=True,
         )
         cov_path = Path(".coverage")
         if cov_path.exists():
@@ -91,10 +81,9 @@ def coverage(session: nox.Session) -> None:
     session.run_always("pdm", "install", "-G", "coverage", external=True)
 
     if not session.posargs and any(Path().glob(".coverage.*")):
-        session.run("pdm", "run", "coverage", "combine", external=True)
-    session.run("pwd")
-    session.run("ls")
-    session.run("pdm", "run", "coverage", *args, external=True)
+        session.run("coverage", "combine")
+    session.run("pwd", external=True)
+    session.run("coverage", *args)
 
 
 @nox.session(python=python_versions)
