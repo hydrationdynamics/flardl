@@ -2,7 +2,6 @@
 import os
 import random
 import shutil
-import sys
 from pathlib import Path
 
 import nox

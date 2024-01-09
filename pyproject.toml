@@ -171,7 +171,6 @@ convention = 'google'
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "nox>=2023.4.22",
     "ruff>=0.1.6",
 ]
 [build-system]
