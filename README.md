@@ -360,10 +360,11 @@ in order of descending size.
 
 ## Requirements
 
-_Flardl_ is tested under python 3.12, on Linux, MacOS, and
-Windows and under 3.9 thru 3.11 on Linux. Under the hood,
-_flardl_ relies on [httpx](https://www.python-httpx.org/) and is supported
-on whatever platforms that library works under, for both HTTP/1.1
+_Flardl_ is tested under the highest supported python version on
+Linux, MacOS, and Windows and under the lowest supported python version
+on Linux. Under the hood, _flardl_ relies on
+[httpx](https://www.python-httpx.org/) and is supported
+on whatever platforms that library works for both HTTP/1.1
 and HTTP/2.
 
 ## Installation

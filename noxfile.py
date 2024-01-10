@@ -78,11 +78,11 @@ def coverage(session: nox.Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
     session.run_always("pdm", "install", "-G", "coverage", external=True)
-
-    if not session.posargs and any(Path().glob(".coverage.*")):
-        session.run("coverage", "combine")
-    session.run("pwd", external=True)
-    session.run("coverage", *args)
+    with session.chdir(session.invoked_from):
+        if not session.posargs and any(Path().glob(".coverage.*")):
+            session.run("coverage", "combine")
+        session.run("pwd", external=True)
+        session.run("coverage", *args)
 
 
 @nox.session(python=python_versions)
