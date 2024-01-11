@@ -93,6 +93,7 @@ xdoctest = [
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 tests = ["tests", "*/tests"]
+relative_files = true
 
 [tool.coverage.report]
 show_missing = true
