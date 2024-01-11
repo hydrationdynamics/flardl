@@ -80,7 +80,6 @@ def coverage(session: nox.Session) -> None:
     session.run_always("pdm", "install", "-G", "coverage", external=True)
     if not session.posargs and any(Path().glob(".coverage.*")):
         session.run("coverage", "combine")
-    session.run("ls", "/Users/runner/work/flardl/flardl", external=True)
     session.run("coverage", *args)
 
 
