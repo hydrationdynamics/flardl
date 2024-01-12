@@ -5,6 +5,7 @@ copyright = "2023, Joel Berendzen"  # noqa: A001
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.imgconverter",
     "myst_parser",
 ]
 autodoc_typehints = "description"
