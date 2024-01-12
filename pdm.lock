@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "coverage", "dev", "docs", "mypy", "pre-commit", "safety", "tests", "typeguard", "xdoctest"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:c9d6b4130f8b1de126fac95b83fd8cd43e545c4ffecce227f111e12331bde19f"
+content_hash = "sha256:d4223c47ad4bfaa38cf46bd4f1f30176af6687992f8b8fa764c729e6e842ece9"
 
 [[package]]
 name = "alabaster"

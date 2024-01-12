@@ -83,6 +83,9 @@ pre-commit = [
 xdoctest = [
     "xdoctest[colors]>=1.1.2",
 ]
+coverage = [
+    "coverage>=7.4.0",
+]
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
