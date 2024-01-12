@@ -41,7 +41,8 @@ def precommit(session: nox.Session) -> None:
 def safety(session: nox.Session) -> None:
     """Scan dependencies for insecure packages."""
     session.run_always("pdm", "install", "-G", "safety", external=True)
-    session.run_always("pdm", "export", "-o", "requirements.txt", "--without-hashes")
+    session.run_always("pdm", "export", "-o", "requirements.txt",
+                       "--without-hashes", external=True)
     session.run("safety", "check", "--full-report")
     Path("requirements.txt").unlink()
 

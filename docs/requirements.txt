@@ -1,4 +1,7 @@
 furo
-sphinx
-myst_parser
 linkify-it-py
+numpy
+sphinx
+sphinx-autobuild
+sphinx-click
+myst_parser
