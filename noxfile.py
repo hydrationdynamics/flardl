@@ -49,14 +49,14 @@ def safety(session: nox.Session) -> None:
 def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src"]
-    session.run_always("pdm", "install", "-G", "tests", "-G", "mypy", external=True)
+    session.run_always("pdm", "install", "-G", "tests", external=True)
     session.run("mypy", "--check-untyped-defs", *args)
 
 
 @nox.session(python=python_versions)
 def tests(session: nox.Session) -> None:
     """Run the test suite."""
-    session.run_always("pdm", "install", "-G", "tests", "-G", "coverage", external=True)
+    session.run_always("pdm", "install", "-G", "tests", external=True)
     try:
         session.run(
             "coverage",
@@ -77,7 +77,7 @@ def tests(session: nox.Session) -> None:
 def coverage(session: nox.Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
-    session.run_always("pdm", "install", "-G", "coverage", external=True)
+    session.run_always("pdm", "install", "-G", "tests", external=True)
     if not session.posargs and any(Path().glob(".coverage.*")):
         session.run("coverage", "combine")
     session.run("coverage", *args)
@@ -87,7 +87,7 @@ def coverage(session: nox.Session) -> None:
 def typeguard(session: nox.Session) -> None:
     """Runtime type checking using Typeguard."""
     session.run_always(
-        "pdm", "install", "-G", "tests", "-G", "typeguard", external=True
+        "pdm", "install", "-G", "tests", external=True
     )
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 

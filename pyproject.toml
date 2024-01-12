@@ -54,11 +54,8 @@ tests = [
     "pandas-stubs>=2.1.1.230928",
     "pytest-trio>=0.8.0",
     "pytest-datadir-mgr>=1.3.4",
-]
-mypy = [
-    "mypy>=1.7.0",
-]
-typeguard = [
+    "coverage[toml]>=7.4.0",
+    "mypy>=1.8.0",
     "typeguard>=4.1.5",
 ]
 docs = [
@@ -72,9 +69,6 @@ docs = [
 ]
 safety = [
     "safety>=2.3.5",
-]
-coverage = [
-    "coverage[toml]>=7.3.2",
 ]
 analysis = [
     "scipy>=1.11.3",
