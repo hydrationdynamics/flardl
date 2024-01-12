@@ -21,7 +21,7 @@ nox.options.sessions = (
     "xdoctest",
     "docs-build",
 )
-
+nox.options.reuse_existing_virtualenvs = True
 
 @nox.session(name="pre-commit", python=python_versions[0])
 def precommit(session: nox.Session) -> None:
