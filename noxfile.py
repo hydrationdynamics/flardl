@@ -11,6 +11,7 @@ os.environ.update({"PDM_IGNORE_SAVED_PYTHON": "1"})
 
 package = "flardl"
 python_versions = ["3.12", "3.11", "3.10", "3.9"]
+primary_python_version = "3.12"
 nox.needs_version = ">= 2021.10.1"
 nox.options.sessions = (
     "pre-commit",
@@ -23,7 +24,7 @@ nox.options.sessions = (
 )
 nox.options.reuse_existing_virtualenvs = True
 
-@nox.session(name="pre-commit", python=python_versions[0])
+@nox.session(name="pre-commit", python=primary_python_version)
 def precommit(session: nox.Session) -> None:
     """Lint using pre-commit."""
     args = session.posargs or [
@@ -36,7 +37,7 @@ def precommit(session: nox.Session) -> None:
     session.run("pre-commit", *args)
 
 
-@nox.session(python=python_versions[0])
+@nox.session(python=primary_python_version)
 def safety(session: nox.Session) -> None:
     """Scan dependencies for insecure packages."""
     session.run_always("pdm", "install", "-G", "safety", external=True)
@@ -45,7 +46,7 @@ def safety(session: nox.Session) -> None:
     Path("requirements.txt").unlink()
 
 
-@nox.session(python=python_versions)
+@nox.session(python=primary_python_version)
 def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src"]
@@ -73,17 +74,17 @@ def tests(session: nox.Session) -> None:
             session.notify("coverage", posargs=[])
 
 
-@nox.session(python=python_versions[0])
+@nox.session(python=primary_python_version)
 def coverage(session: nox.Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
-    session.run_always("pdm", "install", "-G", coverage, external=True)
+    session.run_always("pdm", "install", "-G", "coverage", external=True)
     if not session.posargs and any(Path().glob(".coverage.*")):
         session.run("coverage", "combine")
     session.run("coverage", *args)
 
 
-@nox.session(python=python_versions)
+@nox.session(python=primary_python_version)
 def typeguard(session: nox.Session) -> None:
     """Runtime type checking using Typeguard."""
     session.run_always(
@@ -92,7 +93,7 @@ def typeguard(session: nox.Session) -> None:
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)
 
 
-@nox.session(python=python_versions)
+@nox.session(python=primary_python_version)
 def xdoctest(session: nox.Session) -> None:
     """Run examples with xdoctest."""
     if session.posargs:
@@ -105,7 +106,7 @@ def xdoctest(session: nox.Session) -> None:
     session.run("python", "-m", "xdoctest", *args)
 
 
-@nox.session(name="docs-build", python=python_versions[0])
+@nox.session(name="docs-build", python=primary_python_version)
 def docs_build(session: nox.Session) -> None:
     """Build the documentation."""
     args = session.posargs or ["docs", "docs/_build"]
@@ -118,7 +119,7 @@ def docs_build(session: nox.Session) -> None:
     session.run("sphinx-build", *args)
 
 
-@nox.session(python=python_versions[0])
+@nox.session(python=primary_python_version)
 def docs(session: nox.Session) -> None:
     """Build and serve the documentation with live reloading on file changes."""
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
