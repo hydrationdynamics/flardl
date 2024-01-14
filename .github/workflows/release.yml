@@ -25,8 +25,8 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Install PDM
-        uses: pdm-project/setup-pdm@v3
+      - name: Install pdm and pdm-version
+        run: pipx install pdm-version
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -40,6 +40,12 @@ jobs:
         with:
           version-command: |
             bash -o pipefail -c "pdm show --version"
+
+      - name: Bump version for developmental release
+        if: "! steps.check-version.outputs.tag"
+        run: |
+          version=$(pdm show --version) &&
+          pdm version $version.dev.$(date +%s)
 
       - name: Build package
         run: pdm build
