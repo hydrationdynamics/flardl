@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 2
 
       - name: Install pdm and pdm-version
-        run: pipx install pdm-version
+        run: pipx install --include-deps pdm-version
 
       - name: Check if there is a parent commit
         id: check-parent-commit
