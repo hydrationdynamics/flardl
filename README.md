@@ -128,7 +128,7 @@ limitation to transfer rates, we can write the _Equation of Time_
 for the time required to receive file $i$ from server $j$ as
 approximately given by
 
-$$
+$`
   t_{i} = F_i - I_i \approx L_j +
      (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
      H_{ij}(i, D_j, D_{{\rm crit}_j})
@@ -281,7 +281,7 @@ a given server $j$ is given by the expectation rates for
 modal-sized files from the Equation of Time in the case of small
 queue depths where the Head-Of-Line term is zero as
 
-$$
+$`
     k_j = \array{
      \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \cr
      \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev},
@@ -290,7 +290,7 @@ $$
        & \text{if arriving,} \cr
      \tilde{\tau_j}, & \text{if updated,} \cr
     }
-$$
+`$
 
 where
 
