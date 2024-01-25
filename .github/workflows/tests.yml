@@ -32,13 +32,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5
+      - name: Set up PDM for python ${{ matrix.python }}
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python }}
-
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v3
 
       - name: Install Nox
         run: |
@@ -91,13 +88,10 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up PDM for latest python
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.12"
-
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v3
 
       - name: Install Nox
         run: |
