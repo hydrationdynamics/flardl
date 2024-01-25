@@ -132,7 +132,7 @@ $`
   t_{i} = F_i - I_i \approx L_j +
      (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
      H_{ij}(i, D_j, D_{{\rm crit}_j})
-$$
+`$
 
 where
 
@@ -157,7 +157,7 @@ where
 If your downloading process is the only one accessing the server,
 the Head-Of-Line latency can be quantified via the relation
 
-$$
+$`
   H_{ij} =
    \array{
        0, & D_j < D_{{\rm crit}_j} \cr
@@ -165,7 +165,7 @@ $$
         F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
         & D_j \ge D_{{\rm crit}_j} \cr
     }
-$$
+`$
 
 where the prime in the subscript represents a re-indexing of
 entries in order of end times rather than start times. If
