@@ -129,9 +129,11 @@ for the time required to receive file $i$ from server $j$ as
 approximately given by
 
 $`
+\begin{equation}
   t_{i} = F_i - I_i \approx L_j +
      (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
      H_{ij}(i, D_j, D_{{\rm crit}_j})
+\end{equation}
 `$
 
 where
@@ -158,6 +160,7 @@ If your downloading process is the only one accessing the server,
 the Head-Of-Line latency can be quantified via the relation
 
 $`
+\begin{equation}
   H_{ij} =
    \array{
        0, & D_j < D_{{\rm crit}_j} \cr
@@ -165,6 +168,7 @@ $`
         F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
         & D_j \ge D_{{\rm crit}_j} \cr
     }
+\end{equation}
 `$
 
 where the prime in the subscript represents a re-indexing of
@@ -282,6 +286,7 @@ modal-sized files from the Equation of Time in the case of small
 queue depths where the Head-Of-Line term is zero as
 
 $`
+\begin{equation}
     k_j = \array{
      \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \cr
      \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev},
@@ -290,6 +295,7 @@ $`
        & \text{if arriving,} \cr
      \tilde{\tau_j}, & \text{if updated,} \cr
     }
+\end{equation}
 `$
 
 where
