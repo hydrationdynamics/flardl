@@ -294,7 +294,7 @@ $`
         1/(t_{\rm cur} - I_{\rm first})
           & \text{if arriving,} \\
         \tilde{\tau_j} & \text{if updated,} \\
-       \end{array}
+       \end{array} \right.
    \end{equation}
 `$
 
