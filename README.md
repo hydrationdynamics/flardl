@@ -128,11 +128,13 @@ limitation to transfer rates, we can write the _Equation of Time_
 for the time required to receive file $i$ from server $j$ as
 approximately given by
 
-$$
-  t_{i} = F_i - I_i \approx L_j +
-     (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
-     H_{ij}(i, D_j, D_{{\rm crit}_j})
-$$
+$`
+  \begin{equation}
+     t_{i} = F_i - I_i \approx L_j +
+        (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
+        H_{ij}(i, D_j, D_{{\rm crit}_j})
+   \end{equation}
+`$
 
 where
 
@@ -157,17 +159,16 @@ where
 If your downloading process is the only one accessing the server,
 the Head-Of-Line latency can be quantified via the relation
 
-$$`
-\begin{equation}
-  H_{ij} =
-   \array{
-       0, & D_j < D_{{\rm crit}_j} \cr
-      I_i -
-        F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
-        & D_j \ge D_{{\rm crit}_j} \cr
-    }
-\end{equation}
-`$$
+$`
+   \begin{equation}
+     H_{ij} =
+      \array{
+          0, & D_j < D_{{\rm crit}_j} \cr
+          I_i - F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
+           & D_j \ge D_{{\rm crit}_j} \cr
+      }
+   \end{equation}
+`$
 
 where the prime in the subscript represents a re-indexing of
 entries in order of end times rather than start times. If
@@ -284,16 +285,16 @@ modal-sized files from the Equation of Time in the case of small
 queue depths where the Head-Of-Line term is zero as
 
 $`
-\begin{equation}
-    k_j = \array{
-     \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \cr
-     \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev},
-       & \text{if informed}, \cr
-     1/(t_{\rm cur} - I_{\rm first}),
-       & \text{if arriving,} \cr
-     \tilde{\tau_j}, & \text{if updated,} \cr
+   \begin{equation}
+       k_j = \array{
+        \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \cr
+        \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev},
+          & \text{if informed}, \cr
+        1/(t_{\rm cur} - I_{\rm first}),
+          & \text{if arriving,} \cr
+        \tilde{\tau_j}, & \text{if updated,} \cr
     }
-\end{equation}
+   \end{equation}
 `$
 
 where
