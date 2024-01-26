@@ -162,11 +162,11 @@ the Head-Of-Line latency can be quantified via the relation
 $`
    \begin{equation}
      H_{ij} =
-      \array{
+       \left\{ \begin{array}{ll}
           0, & D_j < D_{{\rm crit}_j} \cr
           I_i - F_{i^{\prime}-D_j+D_{{\rm crit}_j}-1},
            & D_j \ge D_{{\rm crit}_j} \cr
-      }
+       \end{array} \right.
    \end{equation}
 `$
 
