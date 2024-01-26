@@ -286,14 +286,15 @@ queue depths where the Head-Of-Line term is zero as
 
 $`
    \begin{equation}
-       k_j = \left[ \array{
-        \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \cr
+       k_j =
+       \begin{array}{ll}
+        \tilde{S} B_{\rm max} / D_j, & \text{if naive}, \\
         \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev},
-          & \text{if informed}, \cr
+          & \text{if informed}, \\
         1/(t_{\rm cur} - I_{\rm first}),
-          & \text{if arriving,} \cr
-        \tilde{\tau_j}, & \text{if updated,} \cr
-    }
+          & \text{if arriving,} \\
+        \tilde{\tau_j}, & \text{if updated,} \\
+       \end{array}
    \end{equation}
 `$
 
