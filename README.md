@@ -157,8 +157,7 @@ where
 If your downloading process is the only one accessing the server,
 the Head-Of-Line latency can be quantified via the relation
 
-$$
-`
+$$`
 \begin{equation}
   H_{ij} =
    \array{
@@ -168,8 +167,7 @@ $$
         & D_j \ge D_{{\rm crit}_j} \cr
     }
 \end{equation}
-`
-$$
+`$$
 
 where the prime in the subscript represents a re-indexing of
 entries in order of end times rather than start times. If
