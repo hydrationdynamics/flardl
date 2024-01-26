@@ -129,11 +129,9 @@ for the time required to receive file $i$ from server $j$ as
 approximately given by
 
 $$
-\begin{equation}
   t_{i} = F_i - I_i \approx L_j +
      (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
      H_{ij}(i, D_j, D_{{\rm crit}_j})
-\end{equation}
 $$
 
 where
