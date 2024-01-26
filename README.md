@@ -288,12 +288,12 @@ $`
    \begin{equation}
        k_j =
        \left\{ \begin{array}{ll}
-        \tilde{S} B_{\rm max} / D_j & \text{if naive}, \\
+        \tilde{S} B_{\rm max} / D_j & \mbox{if naive}, \\
         \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev}
-          & \text{if informed}, \\
+          & \mbox{if informed}, \\
         1/(t_{\rm cur} - I_{\rm first})
-          & \text{if arriving,} \\
-        \tilde{\tau_j} & \text{if updated,} \\
+          & \mbox{if arriving,} \\
+        \tilde{\tau_j} & \mbox{if updated,} \\
        \end{array} \right.
    \end{equation}
 `$
