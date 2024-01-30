@@ -130,13 +130,11 @@ limitation to transfer rates, we can write the _Equation of Time_
 for the time required to receive file $i$ from server $j$ as
 approximately given by
 
-$`
-  \begin{equation}
+$$
      t_{i} = F_i - I_i \approx L_j +
         (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
         H_{ij}(i, D_j, D_{{\rm crit}_j})
-   \end{equation}
-`$
+$
 
 where
 
@@ -362,15 +360,17 @@ soon as one has current information about which server is indeed
 fastest (i.e., by reaching the _arriving_ state). The way that _flardl_
 optimizes downloads when provided a dictionary of relative file sizes
 is to sort the incoming list of downloads into two lists. The first
-list is sorted into tiers of files with the size of the tier equal to
-the number of servers $N_{\rm serv}$ in use. The 0th tier is the
-smallest $N_{\rm serv}$ files, the next tier is the largest $N_{\rn serv}$
-files below a cutoff file size (default of 2x the modal file size), and
-alternating between the smallest and biggest crappies out to $N_{\min}$
-files. The second list is all other files, sorted in order of descending
-file size. _Flardl_ waits until it enters the _updated_ state, with all
+list (the crappies list) is sorted into tiers of files with the size
+of the tier equal to the number of servers $N_{\rm serv}$ in use. The
+0th tier is the smallest $N_{\rm serv}$ files, the next tier is the
+largest $N_{\rn serv}$ files below a cutoff file size (default of 2x the
+modal file size), and alternating between the smallest and biggest
+crappies out to $N_{\min}$ files. The second list is all other files,
+sorted in order of descending file size (that is, starting with the
+whales). _Flardl_ waits until it enters the _updated_ state, with all
 files from the first list returned before drawing from the second list
-so that the fastest server will get the job of sending the biggest file.
+so that the fastest server will definitively get the job of sending the
+biggest file, thus minimizing waits for overhanging files.
 
 ## Requirements
 
@@ -420,3 +420,4 @@ _Flardl_ was written by Joel Berendzen.
 
 [license]: https://github.com/hydrationdynamics/flardl/blob/main/LICENSE
 [contributor guide]: https://github.com/hydrationdynamics/flardl/blob/main/CONTRIBUTING.md
+$$
