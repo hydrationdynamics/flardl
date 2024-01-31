@@ -1,7 +1,5 @@
 # Theory of Adaptilastic Queueing
 
-### Quantifying rates and times
-
 The downloading process lives simultaneously in two spaces,
 rates and times. In _rate space_, the observables are the
 overall bandwidth (in units of Mbit/s) of all downloads
@@ -11,6 +9,8 @@ and at completion. In _time space_ the observables are the
 download times and sizes of individual files and the
 queue depths at launch and completion of the individual
 server used for the transfer.
+
+# Quantifying download bit rates
 
 Packets are always transmitted at line speed of the specific
 connection. The effective rate is determined by the slowest
@@ -32,6 +32,8 @@ expoentially-decaying section at the queue depth where
 the decay is largest. (This may be shown analytically for
 exponenential decay where the step size in queue depth
 is small enough to be considered continuous.)
+
+## Quantifying file transfer times
 
 Ignoring the effects of finite packet size and treating the
 networking components shared among each connection as the main
@@ -95,93 +97,3 @@ latency $L_j$ and slope governed by an expression whose only
 unknown is a near-constant related to acknowledgements. As queue
 depth increases, transfer times are dominated by $H_{ij}$, the
 time spent waiting to get to the head of the queue.
-
-### Adaptilastic Queueing
-
-_Flardl_ implements a method I call "adaptilastic"
-queueing to deliver robust performance in real situations.
-Adaptilastic queueing uses timing on transfers from an initial
-period--launched using optimistic assumptions--to
-optimize later transfers by using the minimum total depth over
-all quese that will plateau the download bit rate while avoiding
-excess queue depth on any given server. _Flardl_ distinguishes
-among four different operating regimes:
-
-- **Naive**, where no transfers have ever been completed
-  on a given server,
-- **Informed**, where information from a previous run
-  is available,
-- **Arriving**, where information from at least one transfer
-  to at least one server has occurred but not enough files
-  have been transferred so that all statistics can be calculated,
-- **Updated**, where a sufficient number of transfers has
-  occurred to a server that file transfers may be
-  fully characterized.
-
-The optimistic rate at which _flardl_ launches requests for
-a given server $j$ is given by the expectation rates for
-modal-sized files from the Equation of Time in the case of small
-queue depths where the Head-Of-Line term is zero as
-
-$`
-   \begin{equation}
-       k_j =
-       \left\{ \begin{array}{ll}
-        \tilde{S} B_{\rm max} / D_j & \mbox{if naive}, \\
-        \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev}
-          & \mbox{if informed}, \\
-        1/(t_{\rm cur} - I_{\rm first})
-          & \mbox{if arriving,} \\
-        \tilde{\tau_j} & \mbox{if updated,} \\
-       \end{array} \right.
-   \end{equation}
-`$
-
-where
-
-- $\tilde{S}$ is the modal file size for the collection,
-- $B_{\rm max}$ is the maximum permitted download rate,
-- $D_j$ is the server queue depth at launch,
-- $\tilde{\tau}_{\rm prev}$ is the modal file arrival rate
-  for the previous session,
-- $B_{\rm prev}$ is the plateau download bit rate for
-  the previous session,
-- $t_{\rm cur}$ is the current time,
-- $I_{\rm first}$ is the initiation time for the first
-  transfer to arrive,
-- and $\tilde{\tau_j}$ is the modal file transfer rate
-  for the current session.
-
-After waiting an exponentially-distributed stochastic period
-given by the applicable value for $k_j$, testing is done
-against three queue depth limits:
-
-- $D_{{\rm max}_j}$ the maximum per-server queue depth
-  which is an input parameter, revised downward if any
-  queue requests are rejected (default 100),
-- $D_{\rm sat}$ the total queue depth at which the download
-  bit rate saturates or exceeds the maximum bit rate,
-- $D_{{\rm crit}_j}$ the critical per-server queue depth,
-  calculated each session when updated information is available.
-
-If any of the three queue depth limits is exceeded, a second
-stochastic wait period at the inverse of the current per-server
-rate $k_j$ is added.
-
-After enough files have come back from a server or set of
-servers (a configurable parameter $N_{\rm min}$), _flardl_
-fits the curve of observed network bandwidth versus queue
-depth to obtain the effective download bit rate at saturation
-$B_{\rm eff}$ and the total queue depth at saturation
-$D*{\rm sat}$. Then, per-server, _flardl_ fits the curves
-of service times versus file sized to the Equation of Time
-to estimate server latencies $L_j$ and if the server queue
-depth $D_j$ is run up high enough the critical queue depths
-$D_{{\rm crit}_j}$. This estimates reflects local
-network conditions, server policy, and overall server
-load at time of request, so they are both adaptive and elastic.
-These values form the bases for launching the remaining requests .
-Servers with higher modal service rates (i.e., rates of serving
-crappies) will spend less time waiting and thus stand a better
-chance at nabbing an open queue slot, without penalizing servers
-that happen to draw a big downloads (whales).

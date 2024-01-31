@@ -133,11 +133,12 @@ in parallel up to their individual critical queue depths, then
 serial as best they can. But such non-adaptive non-elastic algorithms
 give poor real-world performance or multiple reasons. First, if
 there is more than one server queue, differing file sizes and
-tramsfer rates will result in the queueing equivalent of
+transfer rates will result in the queueing equivalent of
 [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law),
-an "overhang" where one server still has many files queued up to
-serve while others have completed all requests. The server with
-the overhang is not guaranteed to be the fastest server, either.
+by **creating an overhang** where one server still has multiple
+files queued up to serve while others have completed all requests.
+The server with the overhang is not guaranteed to be the fastest
+server, either.
 
 Moreover, if a server decides you are abusing its queue policies,
 it may take action that hurts your current and future downloads.
@@ -168,7 +169,7 @@ An analogy might help us here. Let's say you are a person who
 enjoys keeping track of statistics, and you decide to try
 fishing. At first, you have a single fishing rod and you go
 fishing at a series of local lakes where your catch consists
-of small bony fishes called "crappies". Your records reval
+of \_small fishes called "crappies". Your records reval
 that while the rate of catching fishes can vary from day to
 day--fish might be hungry or not--the average size of your
 catch is pretty stable. Bigger ponds tend to have bigger fish
@@ -186,16 +187,20 @@ your time and attention to reel in the shark, but landing
 a single shark totally skews the average weight of your catch.
 If you fish in the ocean for long enough you will probably catch
 a big shark that weighs hundreds of times more than crappies.
-Maybe you might even hook a small whale. But you and your crew
+Maybe you might even **hook a whale**. But you and your crew
 can only effecively reel in so many hooked lines at once. Putting
 out more lines than that effective limit of hooked plus waiting-to-be-hooked
 lines only results in fishes waiting on the line, when they
 may break the line or get partly eaten before you can reel
-them in. Our theory of fishing says to put out lines
-at a high-side estimate of the most probable rate of catching
-modal-sized fishes until you reach the maximum number of lines the boat
-allows or until you catch enough fish to be able to estimate
-how the fish are biting. Then you back off the number
+them in.
+
+Our theory of fishing says to **put out lines
+at the usual rate of catching crappies but limit the number of lines
+to deal with whales**. The most probable rate of catching
+modal-sized fies will be optimistic, but you can delay putting
+out more lines if you reach the maximum number of lines the boat
+allows. Once you catch enough fish to be able to estimate
+how the fish are biting, you can back off the number
 of lines to the number that you and your crew can handle
 at a time that day.
 
@@ -257,7 +262,8 @@ where
 
 After waiting an exponentially-distributed stochastic period
 given by the applicable value for $k_j$, testing is done
-against four limits calculated by the methods in [theory]:
+against four limits calculated by the methods in the [theory]
+section:
 
 - $D_{{\rm max}_j}$ the maximum per-server queue depth
   which is an input parameter, revised downward if any
