@@ -371,8 +371,8 @@ After enough files have come back from a server or set of
 servers (a configurable parameter $N_{\rm min}$), _flardl_
 fits the curve of observed network bandwidth versus queue
 depth to obtain the effective download bit rate at saturation
-$B_{\rm eff} and the total queue depth at saturation
-$D*{\rm sat}$. Then, per-server, \_flardl* fits the curves
+$B_{\rm eff}$ and the total queue depth at saturation
+$D*{\rm sat}$. Then, per-server, _flardl_ fits the curves
 of service times versus file sized to the Equation of Time
 to estimate server latencies $L_j$ and if the server queue
 depth $D_j$ is run up high enough the critical queue depths
@@ -450,11 +450,9 @@ _Flardl_ was written by Joel Berendzen.
 [pypi]: https://pypi.org/
 [file an issue]: https://github.com/hydrationdynamics/flardl/issues
 [pip]: https://pip.pypa.io/
+[theory]: https://github.com/hydrationdynamics/flardl/blob/main/THEORY.md
 
 <!-- github-only -->
 
 [license]: https://github.com/hydrationdynamics/flardl/blob/main/LICENSE
 [contributor guide]: https://github.com/hydrationdynamics/flardl/blob/main/CONTRIBUTING.md
-
-$$
-$$
