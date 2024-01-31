@@ -96,21 +96,21 @@ estimate and fits to log-normal and normal distributions.
 
 Queueing algorithms that rely upon per-file rates as the
 pricipal control mechanism implicitly assume that queue
-statistics can be approximated with a normal distribution.
-In making that assumption, they largely ignore the effects
-of big files on overall download statistics. Such algorithms
-inevitably encounter problems because **mean values
-are neither stable nor characteristic of the distribution**.
-For example, as can be seen in the fits above, the mean and
-standard distribution of samples drawn from a long-tail
-distribution tend to grow with increasing sample size.
-In the example shown in the figure above, a fit of
-a normal distribution to a sample of 5% of the data (dashed
-line) gives a markedly-lower mean and standard deviation than
-the fit to all points (dotted line) and both fits are poor.
-The reason why the mean tend to grow larger with more files is
-because the more files sampled, the higher the likelihood that
-one of them will be huge enough to dominate the average values.
+statistics can be approximated with a normal-ish distribution,
+meaning one without a long tail. In making that assumption,
+they largely ignore the effects of big files on overall
+download statistics. Such algorithms inevitably encounter
+problems because **mean values are neither stable nor
+characteristic of the distribution**. For example, as can be
+seen in the fits above, the mean and standard distribution
+of samples drawn from a long-tail distribution tend to grow
+with increasing sample size. In the example shown in the figure
+above, a fit of a normal distribution to a sample of 5% of the
+data (dashed line) gives a markedly-lower mean and standard
+deviation than the fit to all points (dotted line) and both
+fits are poor. The reason why the mean tend to grow larger with
+more files is because the more files sampled, the higher the
+likelihood that one of them will be huge enough to dominate the average values.
 Algorithms that employ average per-file rates or times as the
 primary means of control will launch requests too slowly most
 of the time while letting queues run too deep when big downloads
@@ -130,11 +130,13 @@ limitation to transfer rates, we can write the _Equation of Time_
 for the time required to receive file $i$ from server $j$ as
 approximately given by
 
-$$
+$`
+   \begin{equation}
      t_{i} = F_i - I_i \approx L_j +
         (c_{\rm ack} L_j + 1 /B_{\rm eff}) S_i +
         H_{ij}(i, D_j, D_{{\rm crit}_j})
-$$
+   \end{equation}
+`$
 
 where
 
@@ -168,7 +170,7 @@ $`
            & D_j \ge D_{{\rm crit}_j} \cr
        \end{array} \right.
    \end{equation}
-'$
+`$
 
 where the prime in the subscript represents a re-indexing of
 entries in order of end times rather than start times. If
