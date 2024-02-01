@@ -169,7 +169,7 @@ An analogy might help us here. Let's say you are a person who
 enjoys keeping track of statistics, and you decide to try
 fishing. At first, you have a single fishing rod and you go
 fishing at a series of local lakes where your catch consists
-of \_small fishes called "crappies". Your records reval
+of **small fishes called "crappies"**. Your records reval
 that while the rate of catching fishes can vary from day to
 day--fish might be hungry or not--the average size of your
 catch is pretty stable. Bigger ponds tend to have bigger fish
