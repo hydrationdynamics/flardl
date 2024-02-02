@@ -39,16 +39,14 @@ def zip_dict_to_indexed_list(
     """Zip on the longest non-string iterables, adding an index."""
     ret_list = []
     iterable_args = [k for k in arg_dict if isinstance(arg_dict[k], NonStringIterable)]
-    idx = 0
-    for iter_tuple in zip_longest(
+    for idx, iter_tuple in enumerate(zip_longest(
         *[cast(Iterable, arg_dict[k]) for k in iterable_args]
-    ):
+    )):
         args: dict[str, SIMPLE_TYPES] = {INDEX_KEY: idx}
         for key in arg_dict:
             if key in iterable_args:
                 args[key] = iter_tuple[iterable_args.index(key)]
             else:
                 args[key] = cast(SIMPLE_TYPES, arg_dict[key])
-        idx += 1
         ret_list.append(args)
     return ret_list

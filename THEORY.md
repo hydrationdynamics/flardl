@@ -97,3 +97,21 @@ latency $L_j$ and slope governed by an expression whose only
 unknown is a near-constant related to acknowledgements. As queue
 depth increases, transfer times are dominated by $H_{ij}$, the
 time spent waiting to get to the head of the queue.
+
+After enough files have come back from a server or set of
+servers (a configurable parameter $N_{\rm min}$), _flardl_
+fits the curve of observed network bandwidth versus queue
+depth to obtain the effective download bit rate at saturation
+$B_{\rm eff}$ and the total queue depth at saturation
+$D*{\rm sat}$. Then, per-server, _flardl_ fits the curves
+of service times versus file sized to the Equation of Time
+to estimate server latencies $L_j$ and if the server queue
+depth $D_j$ is run up high enough the critical queue depths
+$D_{{\rm crit}_j}$. This estimates reflects local
+network conditions, server policy, and overall server
+load at time of request, so they are both adaptive and elastic.
+These values form the bases for launching the remaining requests .
+Servers with higher modal service rates (i.e., rates of serving
+crappies) will spend less time waiting and thus stand a better
+chance at nabbing an open queue slot, without penalizing servers
+that happen to draw a big downloads (whales).
