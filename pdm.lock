@@ -663,7 +663,7 @@ files = [
 
 [[package]]
 name = "hypothesis"
-version = "6.97.4"
+version = "6.98.2"
 requires_python = ">=3.8"
 summary = "A library for property-based testing"
 dependencies = [
@@ -672,8 +672,8 @@ dependencies = [
     "sortedcontainers<3.0.0,>=2.1.0",
 ]
 files = [
-    {file = "hypothesis-6.97.4-py3-none-any.whl", hash = "sha256:9069fe3fb18d9b7dd218bd69ab50bbc66426819dfac7cc7168ba85034d98a4df"},
-    {file = "hypothesis-6.97.4.tar.gz", hash = "sha256:28ff724fa81ccc55f64f0f1eb06e4a75db6a195fe0857e9b3184cf4ff613a103"},
+    {file = "hypothesis-6.98.2-py3-none-any.whl", hash = "sha256:b6b443d2477893f3aacb0cfb9f6ac865f66f063573fd495dd54f565ab29972f6"},
+    {file = "hypothesis-6.98.2.tar.gz", hash = "sha256:714910c7545975120beeecf817ff6430f2f7a77d980377575ed04d690e432a09"},
 ]
 
 [[package]]
@@ -841,15 +841,15 @@ files = [
 
 [[package]]
 name = "linkify-it-py"
-version = "2.0.2"
+version = "2.0.3"
 requires_python = ">=3.7"
 summary = "Links recognition library with FULL unicode support."
 dependencies = [
     "uc-micro-py",
 ]
 files = [
-    {file = "linkify-it-py-2.0.2.tar.gz", hash = "sha256:19f3060727842c254c808e99d465c80c49d2c7306788140987a1a7a29b0d6ad2"},
-    {file = "linkify_it_py-2.0.2-py3-none-any.whl", hash = "sha256:a3a24428f6c96f27370d7fe61d2ac0be09017be5190d68d8658233171f1b6541"},
+    {file = "linkify-it-py-2.0.3.tar.gz", hash = "sha256:68cda27e162e9215c17d786649d1da0021a451bdc436ef9e0fa0ba5234b9b048"},
+    {file = "linkify_it_py-2.0.3-py3-none-any.whl", hash = "sha256:6bcbc417b0ac14323382aef5c5192c0075bf8a9d6b41820a2b66371eac6b6d79"},
 ]
 
 [[package]]
@@ -1852,8 +1852,8 @@ files = [
 
 [[package]]
 name = "sphinx-autobuild"
-version = "2021.3.14"
-requires_python = ">=3.6"
+version = "2024.2.4"
+requires_python = ">=3.9"
 summary = "Rebuild Sphinx documentation on changes, with live-reload in the browser."
 dependencies = [
     "colorama",
@@ -1861,8 +1861,8 @@ dependencies = [
     "sphinx",
 ]
 files = [
-    {file = "sphinx-autobuild-2021.3.14.tar.gz", hash = "sha256:de1ca3b66e271d2b5b5140c35034c89e47f263f2cd5db302c9217065f7443f05"},
-    {file = "sphinx_autobuild-2021.3.14-py3-none-any.whl", hash = "sha256:8fe8cbfdb75db04475232f05187c776f46f6e9e04cacf1e49ce81bdac649ccac"},
+    {file = "sphinx_autobuild-2024.2.4-py3-none-any.whl", hash = "sha256:63fd87ab7505872a89aef468ce6503f65e794a195f4ae62269db3b85b72d4854"},
+    {file = "sphinx_autobuild-2024.2.4.tar.gz", hash = "sha256:cb9d2121a176d62d45471624872afc5fad7755ad662738abe400ecf4a7954303"},
 ]
 
 [[package]]

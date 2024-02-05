@@ -98,6 +98,41 @@ unknown is a near-constant related to acknowledgements. As queue
 depth increases, transfer times are dominated by $H_{ij}$, the
 time spent waiting to get to the head of the queue.
 
+The optimistic rate at which _flardl_ launches requests for
+a given server $j$ is given by the expectation rates for
+modal-sized files with small queue depths as
+
+$`
+   \begin{equation}
+       k_j =
+       \left\{ \begin{array}{ll}
+        \tilde{S} B_{\rm max} / D_{\rm tot} & \mbox{if naive}, \\
+        \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev}
+          & \mbox{if informed}, \\
+        1/(t_{\rm cur} - I_{\rm first})
+          & \mbox{if arriving,} \\
+        \tilde{\tau_j} & \mbox{if updated,} \\
+       \end{array} \right.
+   \end{equation}
+`$
+
+where
+
+- $\tilde{S}$ is the modal file size for the collection
+  (an input parameter),
+- $B_{\rm max}$ is the maximum permitted download rate
+  (an input parameter),
+- $D_j$ is the server queue depth at launch,
+- $\tilde{\tau}_{\rm prev}$ is the modal file arrival rate
+  for the previous session,
+- $B_{\rm prev}$ is the saturation download bit rate for
+  the previous session,
+- $t_{\rm cur}$ is the current time,
+- $I_{\rm first}$ is the initiation time for the first
+  transfer to arrive,
+- and $\tilde{\tau_j}$ is the modal file transfer rate
+  for the current session with the server.
+
 After enough files have come back from a server or set of
 servers (a configurable parameter $N_{\rm min}$), _flardl_
 fits the curve of observed network bandwidth versus queue

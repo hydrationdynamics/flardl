@@ -199,71 +199,43 @@ queueing to deliver robust performance in real situations.
 Adaptilastic queueing uses timing on transfers from an initial
 period&mdash;launched using optimistic assumptions&mdash;to
 optimize later transfers by using the minimum total depth over
-all quese that will plateau the download bit rate while avoiding
+all quese that will saturate the download bit rate while avoiding
 excess queue depth on any given server. _Flardl_ distinguishes
-among four different operating regimes:
+among four different operating regimes in selecting the
+per-server launch rates:
 
-- **Naive**, where no transfers have ever been completed,
+- **Naive**, where no transfers have ever been completed, launch
+  at a rate which assumes the maximum bandwidth will be
+  achieved with a modal-sized file at this launch (so that
+  launches get slower with the total queue depth).
 - **Informed**, where information from a previous run
-  is available,
+  is available, launch at the previous modal service rate
+  for this server, adjusted upwards for the maximum bandwidth.
 - **Arriving**, where information from at least one transfer
-  to at least one server has occurred,
+  to at least one server has occurred but not enough to
+  fully characterize the server connection, send out at the
+  average file return rate (since the first files are not whales).
 - **Updated**, where a sufficient number of transfers has
-  occurred that file transfers may be characterized, for an
-  least one server.
-
-The optimistic rate at which _flardl_ launches requests for
-a given server $j$ is given by the expectation rates for
-modal-sized files with small queue depths as
-
-$`
-   \begin{equation}
-       k_j =
-       \left\{ \begin{array}{ll}
-        \tilde{S} B_{\rm max} / D_j & \mbox{if naive}, \\
-        \tilde{\tau}_{\rm prev} B_{\rm max} / B_{\rm prev}
-          & \mbox{if informed}, \\
-        1/(t_{\rm cur} - I_{\rm first})
-          & \mbox{if arriving,} \\
-        \tilde{\tau_j} & \mbox{if updated,} \\
-       \end{array} \right.
-   \end{equation}
-`$
-
-where
-
-- $\tilde{S}$ is the modal file size for the collection
-  (an input parameter),
-- $B_{\rm max}$ is the maximum permitted download rate
-  (an input parameter),
-- $D_j$ is the server queue depth at launch,
-- $\tilde{\tau}_{\rm prev}$ is the modal file arrival rate
-  for the previous session,
-- $B_{\rm prev}$ is the plateau download bit rate for
-  the previous session,
-- $t_{\rm cur}$ is the current time,
-- $I_{\rm first}$ is the initiation time for the first
-  transfer to arrive,
-- and $\tilde{\tau_j}$ is the modal file transfer rate
-  for the current session with the server.
+  occurred that file transfers may be characterized, send
+  out at the modal file rate for this server.
 
 After waiting an exponentially-distributed stochastic period
-given by the applicable value for $k_j$, testing is done
-against four limits calculated by the methods in the [theory]
-section:
+given by the applicable per-server launch rate, testing is done
+against four limits:
 
 - The per-server queue depth must be less than the maximum
   $D_{{\rm max}_j}$, an input parameter (default 100), revised
-  downward and stored for future use if any queue requests are
-  rejected (default 100),
-- In the updated state with per-server stats available, the
-  per-server queue depth must be less than the calculated critical
-  per-server queue depth $D_{{\rm crit}_j}$,
-- In the updated state, the total queue depth must be less than
-  the saturation queue depth, $D_{\rm sat}$, at which the
-  current download bit rate $B_{\rm cur}$ saturates,
+  downward if any queue requests are rejected (default 100),
 - The curremt download bit rate must be less than $B_{\rm max}$,
   the maximum bandwidth allowed.
+- In the updated state with per-server stats available, the
+  per-server queue depth must be less than the calculated critical
+  per-server queue depth $D_{{\rm crit}_j}$, as discussed
+  in the [theory section.]
+- In the updated state, the total queue depth must be less than
+  the saturation queue depth, $D_{\rm sat}$, at which the
+  current download bit rate $B_{\rm cur}$ saturates, as calculated
+  in the [theory] section.
 
 If any of the limits are exceeded, a stochastic wait period
 at the inverse of the current per-server rate $k_j$ is added
@@ -310,8 +282,8 @@ $ pip install flardl
 
 ## Usage
 
-_Flardl_ has no CLI and does no I/O other than downloading and writing
-files. See test examples for usage.
+_Flardl_ has no CLI and does no I/O other than downloading. Writing files
+and logging is done in user-provided code. See test examples for usage.
 
 ## Contributing
 
