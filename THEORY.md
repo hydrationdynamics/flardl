@@ -2,36 +2,56 @@
 
 The downloading process lives simultaneously in two spaces,
 rates and times. In _rate space_, the observables are the
-overall bandwidth (in units of Mbit/s) of all downloads
-(obtainable from network interface statistics, which may
-include other traffic) and the overall queue depths at launch
-and at completion. In _time space_ the observables are the
-download times and sizes of individual files and the
-queue depths at launch and completion of the individual
-server used for the transfer.
+overall bandwidth in Mbit/s of all downloads, obtainable
+from network interface statistics (which may
+include other traffic) and the queue depth (totaled over
+all server queues). In _time space_ the observables are
+the download times and sizes of individual files and the
+queue depth of the individual server used for the transfer.
 
 # Quantifying download bit rates
 
-Packets are always transmitted at line speed of the specific
-connection. The effective rate is determined by the slowest
-connection, typically the downstream WAN connection. Starting
-transfers to a particular server requires a certain amount of
-2-way exchanges for handshaking. There will also be latencies
-for acknowledging receipt of packets received, depending on
-the transfer protocol in use. The first transfer from a
-particular server occupies only a few percent of the effective
-bandwith at best. Packets from each subsequent concurrent
-transfer from a server either fit into the latency periods
-of other transfers or have to wait for packets to be transferred.
-The total bit rate thus increases nearly linearly versus
-the number of transfers for the first few concurrent transfers,
-then falls off linear as more transfers interfere with each
-other, then decays exponentially to zero whenever the line is
-saturated with requests. The sweet spot is on the
-expoentially-decaying section at the queue depth where
-the decay is largest. (This may be shown analytically for
-exponenential decay where the step size in queue depth
-is small enough to be considered continuous.)
+Packets are always transmitted at full line speed, but the
+number of packets transmitted per unit time are limited by
+availability and policy. The effective rate is determined
+by the slowest connection, typically the downstream WAN
+connection. Starting transfers incurs a latency due to
+handshaking, and there will also be latencies for acknowledging
+receipt of data, both of which are dependent on transit times
+and protocol in use. Due to these latencies, a single transfer
+generally occupies only a few percent of the effective
+bandwith. Packets from each subsequent concurrent transfer have
+to fit into latencies of other transfers. If transfers
+are occurring to a single server, simultaneously initiated,
+the total bit rate versus queue depth would be approximately
+an exponential relaxation to the effective network bit rate.
+In practice, the approach to the effective bit rate is
+complicated by different start times, different server
+latencies, and possible network throttling kicking in over
+time. Queue depth is not strictly defined, but time-average
+queue depth can be calculated, and the relaxation to effective
+bit rate is approximately a distributed exponential in that
+quantity.
+
+We wish to have an estimate to the mean value of the queue-depth
+exponent to use as a limit. In principle, this is an inverse
+Laplace transform, an operation notoriously numerically unstable,
+even when high-quality data are available. Fits to a cooked-up
+expression are also difficult and overkill, when all we wish
+is a crude estimate of the sweet spot in queue depth. A simple
+heuristic can be found in the analogy of chemical kinetics where
+distributed rates are common. In that situation, a well-known
+trick is to use the depth where the double-exponential derivative
+of bit-rate versus queue depth is maximized:
+
+$`
+\begin{equation}
+    D_{\rm crit} = c \overbar{d}  \backepsilon
+    \max(d(\log B)/d(\log \overbar{D}))
+\end{equation}
+'$
+where $c$ is a small constant that can be calculated exactly
+for the case of an exponential as being near 2 [thesis].
 
 ## Quantifying file transfer times
 
@@ -138,11 +158,11 @@ servers (a configurable parameter $N_{\rm min}$), _flardl_
 fits the curve of observed network bandwidth versus queue
 depth to obtain the effective download bit rate at saturation
 $B_{\rm eff}$ and the total queue depth at saturation
-$D*{\rm sat}$. Then, per-server, _flardl_ fits the curves
+$D_{\rm sat}$. Then, per-server, _flardl_ fits the curves
 of service times versus file sized to the Equation of Time
 to estimate server latencies $L_j$ and if the server queue
 depth $D_j$ is run up high enough the critical queue depths
-$D_{{\rm crit}_j}$. This estimates reflects local
+$`D_{{\rm crit}_j}`$. This estimates reflects local
 network conditions, server policy, and overall server
 load at time of request, so they are both adaptive and elastic.
 These values form the bases for launching the remaining requests .
@@ -150,3 +170,5 @@ Servers with higher modal service rates (i.e., rates of serving
 crappies) will spend less time waiting and thus stand a better
 chance at nabbing an open queue slot, without penalizing servers
 that happen to draw a big downloads (whales).
+
+[thesis] https://www.proquest.com/openview/73b77700993c11eadd41f46f8a8f63d9/1?pq-origsite=gscholar&cbl=18750&diss=y

@@ -224,8 +224,8 @@ given by the applicable per-server launch rate, testing is done
 against four limits:
 
 - The per-server queue depth must be less than the maximum
-  $D_{{\rm max}_j}$, an input parameter (default 100), revised
-  downward if any queue requests are rejected (default 100),
+  $D_{{\rm max}_j}$, an input parameter revised
+  downward if any queue requests are rejected,
 - The curremt download bit rate must be less than $B_{\rm max}$,
   the maximum bandwidth allowed.
 - In the updated state with per-server stats available, the
