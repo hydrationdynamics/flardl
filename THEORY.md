@@ -46,12 +46,14 @@ of bit-rate versus queue depth is maximized:
 
 $`
 \begin{equation}
-    D_{\rm crit} = c \overbar{d}  \backepsilon
-    \max(d(\log B)/d(\log \overbar{D}))
+    D_{\rm crit} = c \overbar{D} \backepsilon
+    \max{\frac{d(\log{B}}{d(\log{\overbar{D}})}}
 \end{equation}
-'$
-where $c$ is a small constant that can be calculated exactly
-for the case of an exponential as being near 2 [thesis].
+`$
+
+where $c$ is a small constant that can be [calculated exactly][thesis]
+for the case of an exponential as being near 2, close enough for
+this use.
 
 ## Quantifying file transfer times
 
