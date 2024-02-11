@@ -16,6 +16,7 @@ hidden:
 maxdepth: 1
 ---
 
+theory <theory>
 reference
 contributing
 Funding <funding>

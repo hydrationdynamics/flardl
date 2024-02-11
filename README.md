@@ -231,11 +231,11 @@ against four limits:
 - In the updated state with per-server stats available, the
   per-server queue depth must be less than the calculated critical
   per-server queue depth $D_{{\rm crit}_j}$, as discussed
-  in the [theory section.]
+  in the [theoretical] section.
 - In the updated state, the total queue depth must be less than
   the saturation queue depth, $D_{\rm sat}$, at which the
   current download bit rate $B_{\rm cur}$ saturates, as calculated
-  in the [theory] section.
+  in the [theoretical] section.
 
 If any of the limits are exceeded, a stochastic wait period
 at the inverse of the current per-server rate $k_j$ is added
@@ -306,7 +306,7 @@ _Flardl_ was written by Joel Berendzen.
 [pypi]: https://pypi.org/
 [file an issue]: https://github.com/hydrationdynamics/flardl/issues
 [pip]: https://pip.pypa.io/
-[theory]: https://github.com/hydrationdynamics/flardl/blob/main/THEORY.md
+[theoretical]: https://github.com/hydrationdynamics/flardl/blob/main/THEORY.md
 
 <!-- github-only -->
 

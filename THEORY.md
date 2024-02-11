@@ -41,13 +41,14 @@ expression are also difficult and overkill, when all we wish
 is a crude estimate of the sweet spot in queue depth. A simple
 heuristic can be found in the analogy of chemical kinetics where
 distributed rates are common. In that situation, a well-known
-trick is to use the depth where the double-exponential derivative
-of bit-rate versus queue depth is maximized:
+trick is to take the saturation depth as where the double-exponential
+derivative of bit-rate $B$ versus average queue depth $\overline{D}$
+is maximized:
 
 $`
 \begin{equation}
-    D_{\rm crit} = c \overbar{D} \backepsilon
-    \max{\frac{d(\log{B}}{d(\log{\overbar{D}})}}
+    D_{\rm sat} = c \overline{D} \backepsilon
+    \max{\frac{d(\log{B})}{d(\log{\overline{D}})}}
 \end{equation}
 `$
 

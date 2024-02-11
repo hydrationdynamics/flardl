@@ -3,5 +3,3 @@
 end-before: <!-- github-only -->
 ---
 ```
-
-[theory]: theory
