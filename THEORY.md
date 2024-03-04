@@ -1,4 +1,4 @@
-# Theory of Adaptilastic Queueing
+# Adaptilastic Queue Theory
 
 The downloading process lives simultaneously in two spaces,
 rates and times. In _rate space_, the observables are the
@@ -8,14 +8,28 @@ include other traffic) and the queue depth (totaled over
 all server queues). In _time space_ the observables are
 the download times and sizes of individual files and the
 queue depth of the individual server used for the transfer.
+In both spaces, the models are crude and the noise from
+unmodeled processes such as server state can be large.
+We aim for robustness and humility in choosing the ways
+to estimate control parameters on the fly.
 
 # Quantifying download bit rates
 
 Packets are always transmitted at full line speed, but the
 number of packets transmitted per unit time are limited by
-availability and policy. The effective rate is determined
-by the slowest connection, typically the downstream WAN
-connection. Starting transfers incurs a latency due to
+traffic-shaping policy enforced by routers as well as
+hardware limits. The effective rate is determined by the
+slowest connection, which in many cases is the downstream
+WAN connection. In many cases, the rate-limiting connection
+will allow traffic at a burst rate that exceeds the limit
+for a short time by a noticeable factor. As of this writing
+(2024), my home internetion connection, advertised as gigabit
+cable, will burst to the LAN limit of 2 gigabits/s for about
+a second before falling back to about 850 megabits/s during
+the daytime. At night when traffic from watching video is high,
+both the burst and limit speeds will be lower.
+
+Starting transfers incurs a latency due to
 handshaking, and there will also be latencies for acknowledging
 receipt of data, both of which are dependent on transit times
 and protocol in use. Due to these latencies, a single transfer
@@ -34,27 +48,7 @@ bit rate is approximately a distributed exponential in that
 quantity.
 
 We wish to have an estimate to the mean value of the queue-depth
-exponent to use as a limit. In principle, this is an inverse
-Laplace transform, an operation notoriously numerically unstable,
-even when high-quality data are available. Fits to a cooked-up
-expression are also difficult and overkill, when all we wish
-is a crude estimate of the sweet spot in queue depth. A simple
-heuristic can be found in the analogy of chemical kinetics where
-distributed rates are common. In that situation, a well-known
-trick is to take the saturation depth as where the double-exponential
-derivative of bit-rate $B$ versus average queue depth $\overline{D}$
-is maximized:
-
-$`
-\begin{equation}
-    D_{\rm sat} = c \overline{D} \backepsilon
-    \max{\frac{d(\log{B})}{d(\log{\overline{D}})}}
-\end{equation}
-`$
-
-where $c$ is a small constant that can be [calculated exactly][thesis]
-for the case of an exponential as being near 2, close enough for
-this use.
+exponent to use as a limit.
 
 ## Quantifying file transfer times
 
@@ -173,5 +167,3 @@ Servers with higher modal service rates (i.e., rates of serving
 crappies) will spend less time waiting and thus stand a better
 chance at nabbing an open queue slot, without penalizing servers
 that happen to draw a big downloads (whales).
-
-[thesis] https://www.proquest.com/openview/73b77700993c11eadd41f46f8a8f63d9/1?pq-origsite=gscholar&cbl=18750&diss=y

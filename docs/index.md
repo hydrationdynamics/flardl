@@ -4,7 +4,6 @@ end-before: <!-- github-only -->
 ---
 ```
 
-[theory]: theory
 [license]: license
 [contributor guide]: contributing
 [reference]: reference

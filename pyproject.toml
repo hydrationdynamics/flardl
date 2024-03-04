@@ -11,7 +11,7 @@ dependencies = [
     "httpx[http2]>=0.25.1",
     "tqdm>=4.66.1",
     "trio>=0.23.1",
-    "psutil>=5.9.6",
+    "psutil>=5.9.8",
     "uvloop>=0.19.0; platform_system!='Windows'",
 ]
 requires-python = ">=3.9,<3.13"
@@ -50,6 +50,7 @@ analysis = [
     "typer>=0.9.0",
     "scipy>=1.11.4",
     "seaborn>=0.13.1",
+    "pyarrow>=15.0.0",
 ]
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
@@ -88,7 +89,6 @@ tests = [
 docs = [
     "furo>=2023.9.10",
     "linkify-it-py>=2.0.2",
-    "numpy>=1.26.1",
     "sphinx>=7.2.6",
     "sphinx-autobuild>=2021.3.14",
     "sphinx-click>=5.0.1",
@@ -164,6 +164,9 @@ max-complexity = 10
     'D205',
     'D104',
     'S101'
+]
+"analysis/*" = [
+    'N806'
 ]
 
 [tool.ruff.lint.pydocstyle]
